@@ -10,7 +10,7 @@
 #                       (note: in addition to ICU_LIBRARIES)
 
 find_package(PkgConfig)
-pkg_check_modules(PC_ICU icu-uc)
+pkg_check_modules(PC_ICU icu-uc IMPORTED_TARGET)
 
 # Look for the header file.
 find_path(
@@ -21,14 +21,19 @@ find_path(
     DOC "Include directory for the ICU library")
 mark_as_advanced(ICU_INCLUDE_DIR)
 
-# Look for the library.
-find_library(
-    ICU_LIBRARY
-    NAMES icuuc cygicuuc cygicuuc32
-    HINTS ${PC_ICU_LIBRARY_DIRS}
-          ${PC_ICU_LIBDIR}
-    DOC "Libraries to link against for the common parts of ICU")
+if(TARGET PkgConfig::PC_ICU)
+  set(ICU_LIBRARY PkgConfig::PC_ICU)
+else()
+    # Look for the library.
+    find_library(
+        ICU_LIBRARY
+        NAMES icuuc cygicuuc cygicuuc32
+        HINTS ${PC_ICU_LIBRARY_DIRS}
+              ${PC_ICU_LIBDIR}
+        DOC "Libraries to link against for the common parts of ICU")
+endif()
 mark_as_advanced(ICU_LIBRARY)
+message(STATUS "ICU_LIBRARY: ${ICU_LIBRARY}")
 
 # Copy the results to the output variables.
 if (ICU_INCLUDE_DIR AND ICU_LIBRARY)
@@ -47,12 +52,16 @@ if (ICU_INCLUDE_DIR AND ICU_LIBRARY)
 
     # Look for the ICU internationalization libraries
     pkg_check_modules(PC_ICU_I18N icu-i18n)
-    find_library(
-        ICU_I18N_LIBRARY
-        NAMES icui18n icuin cygicuin cygicuin32
-        HINTS ${PC_ICU_I18N_LIBRARY_DIRS}
-              ${PC_ICU_I18N_LIBDIR}
-        DOC "Libraries to link against for ICU internationalization")
+    if(TARGET PkgConfig::PC_ICU_I18N)
+        set(ICU_I18N_LIBRARY PkgConfig::PC_ICU_I18N)
+    else()
+        find_library(
+            ICU_I18N_LIBRARY
+            NAMES icui18n icuin cygicuin cygicuin32
+            HINTS ${PC_ICU_I18N_LIBRARY_DIRS}
+                  ${PC_ICU_I18N_LIBDIR}
+            DOC "Libraries to link against for ICU internationalization")
+    endif()
     mark_as_advanced(ICU_I18N_LIBRARY)
     if (ICU_I18N_LIBRARY)
         set(ICU_I18N_FOUND 1)

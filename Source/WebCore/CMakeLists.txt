@@ -3779,7 +3779,7 @@ endif ()
 include_directories(${WebCoreTestSupport_INCLUDE_DIRECTORIES})
 add_library(WebCoreTestSupport ${WebCoreTestSupport_LIBRARY_TYPE} ${WebCoreTestSupport_SOURCES})
 add_dependencies(WebCoreTestSupport WebCore)
-target_link_libraries(WebCoreTestSupport ${WebCoreTestSupport_LIBRARIES})
+target_link_libraries(WebCoreTestSupport PUBLIC ${WebCoreTestSupport_LIBRARIES})
 set_target_properties(WebCoreTestSupport PROPERTIES FOLDER "WebCore")
 
 if (NOT MSVC AND WIN32 AND ${PORT} STREQUAL "Qt")
@@ -3815,7 +3815,7 @@ if (ENABLE_GRAPHICS_CONTEXT_3D AND NOT ${PORT} STREQUAL "Win")
     endif ()
 endif ()
 
-target_link_libraries(WebCore ${WebCore_LIBRARIES})
+target_link_libraries(WebCore PUBLIC ${WebCore_LIBRARIES})
 
 if (SHARED_CORE)
     set_target_properties(WebCore PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
