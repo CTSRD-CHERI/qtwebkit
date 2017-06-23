@@ -198,7 +198,8 @@ endif ()
 # files must be used to deal with very long linker command lines.
 # See https://bugs.webkit.org/show_bug.cgi?id=129771
 # The Apple Toolchain doesn't support response files.
-if (NOT APPLE)
+if (NOT APPLE AND FALSE)
+    # For some reason LLD won't find the response files
     set(CMAKE_NINJA_FORCE_RESPONSE_FILE 1)
 endif ()
 
