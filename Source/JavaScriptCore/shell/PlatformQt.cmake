@@ -1,6 +1,6 @@
 if (QT_STATIC_BUILD)
     list(APPEND JSC_LIBRARIES
         ${DEPEND_STATIC_LIBS}
-        ${CMAKE_THREAD_LIBS_INIT}
+        Threads::Threads
     )
 endif ()

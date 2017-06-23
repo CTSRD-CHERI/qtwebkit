@@ -16,7 +16,7 @@ list(APPEND JavaScriptCore_SYSTEM_INCLUDE_DIRECTORIES
 
 list(APPEND JavaScriptCore_LIBRARIES
     ${Qt5Core_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
+    Threads::Threads
 )
 
 if (QT_STATIC_BUILD)

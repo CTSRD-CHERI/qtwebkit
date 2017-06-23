@@ -325,6 +325,7 @@ else ()
     find_package(Sqlite REQUIRED)
 endif ()
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 if (NOT QT_BUNDLED_JPEG)
