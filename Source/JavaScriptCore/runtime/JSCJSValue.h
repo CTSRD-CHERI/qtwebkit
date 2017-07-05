@@ -76,7 +76,12 @@ template <class T> class WriteBarrierBase;
 enum PreferredPrimitiveType { NoPreference, PreferNumber, PreferString };
 enum ECMAMode { StrictMode, NotStrictMode };
 
+#ifdef __CHERI_PURE_CAPABILITY__
+typedef __intcap_t EncodedJSValue;
+
+#else
 typedef int64_t EncodedJSValue;
+#endif
     
 union EncodedValueDescriptor {
     int64_t asInt64;
