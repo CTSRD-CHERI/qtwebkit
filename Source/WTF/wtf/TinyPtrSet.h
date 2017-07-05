@@ -372,7 +372,8 @@ private:
 
     static const uintptr_t thinFlag = 1;
     static const uintptr_t reservedFlag = 2;
-    static const uintptr_t flags = thinFlag | reservedFlag;
+    // https://github.com/CTSRD-CHERI/clang/issues/146
+    static const uintptr_t flags = /* thinFlag | reservedFlag; */ 3;
     static const uintptr_t reservedValue = 4;
 
     static const unsigned defaultStartingSize = 4;
