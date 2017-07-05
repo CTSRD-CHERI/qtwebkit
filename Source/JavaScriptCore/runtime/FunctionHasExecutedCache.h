@@ -30,6 +30,20 @@
 #include <wtf/HashMethod.h>
 #include <wtf/Vector.h>
 
+// TODO: add this to libc++
+namespace std {
+  template <> struct hash<__intcap_t> {
+    size_t operator()(__intcap_t x) const {
+     return hash<vaddr_t>()(static_cast<vaddr_t>(x));
+    }
+  };
+  template <> struct hash<__uintcap_t> {
+    size_t operator()(__uintcap_t x) const {
+     return hash<vaddr_t>()(static_cast<vaddr_t>(x));
+    }
+  };
+}
+
 namespace JSC {
 
 class FunctionHasExecutedCache {
