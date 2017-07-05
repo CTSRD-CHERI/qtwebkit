@@ -118,12 +118,13 @@ static const size_t MB = 1024 * 1024;
 
 inline bool isPointerAligned(void* p)
 {
-    return !((intptr_t)(p) & (sizeof(char*) - 1));
+    return !((vaddr_t)(p) & (sizeof(char*) - 1));
 }
 
 inline bool is8ByteAligned(void* p)
 {
-    return !((uintptr_t)(p) & (sizeof(double) - 1));
+    static_assert(sizeof(double) == 8, "");
+    return !((vaddr_t)(p) & (sizeof(double) - 1));
 }
 
 /*
