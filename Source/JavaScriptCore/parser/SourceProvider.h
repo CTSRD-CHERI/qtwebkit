@@ -37,7 +37,7 @@ namespace JSC {
 
     class SourceProvider : public RefCounted<SourceProvider> {
     public:
-        static const intptr_t nullID = 1;
+        static const long nullID = 1;
         
         JS_EXPORT_PRIVATE SourceProvider(const String& url, const TextPosition& startPosition);
 
@@ -55,7 +55,7 @@ namespace JSC {
         const String& sourceMappingURL() const { return m_sourceMappingURLDirective; }
 
         TextPosition startPosition() const { return m_startPosition; }
-        intptr_t asID()
+        long asID()
         {
             if (!m_id)
                 getID();
@@ -78,7 +78,7 @@ namespace JSC {
         String m_sourceMappingURLDirective;
         TextPosition m_startPosition;
         bool m_validated : 1;
-        uintptr_t m_id : sizeof(uintptr_t) * 8 - 1;
+        unsigned long m_id : sizeof(unsigned long) * 8 - 1;
     };
 
     class StringSourceProvider : public SourceProvider {
