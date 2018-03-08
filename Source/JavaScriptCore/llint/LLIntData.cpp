@@ -75,7 +75,11 @@ void Data::performAssertions(VM& vm)
     // prepared to change LowLevelInterpreter.asm as well!!
 
 #if USE(JSVALUE64)
+#ifdef __CHERI_PURE_CAPABILITY__
+    const ptrdiff_t PtrSize = _MIPS_SZCAP / 8;
+#else
     const ptrdiff_t PtrSize = 8;
+#endif // __CHERI_PURE_CAPABILITY__
     const ptrdiff_t CallFrameHeaderSlots = 5;
 #else // USE(JSVALUE64) // i.e. 32-bit version
     const ptrdiff_t PtrSize = 4;
