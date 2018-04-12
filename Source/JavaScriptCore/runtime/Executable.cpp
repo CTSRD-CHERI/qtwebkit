@@ -817,10 +817,18 @@ CodeBlockHash ExecutableBase::hashFor(CodeSpecializationKind kind) const
 CodeBlockHash NativeExecutable::hashFor(CodeSpecializationKind kind) const
 {
     if (kind == CodeForCall)
+#ifdef __CHERI_PURE_CAPABILITY__
+        return CodeBlockHash((__cheri_addr unsigned)m_function);
+#else
         return CodeBlockHash(static_cast<unsigned>(bitwise_cast<size_t>(m_function)));
+#endif
     
     RELEASE_ASSERT(kind == CodeForConstruct);
+#ifdef __CHERI_PURE_CAPABILITY__
+    return CodeBlockHash((__cheri_addr unsigned)m_constructor);
+#else
     return CodeBlockHash(static_cast<unsigned>(bitwise_cast<size_t>(m_constructor)));
+#endif
 }
 
 CodeBlockHash ScriptExecutable::hashFor(CodeSpecializationKind kind) const
