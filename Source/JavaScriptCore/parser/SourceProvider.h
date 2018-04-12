@@ -78,7 +78,7 @@ namespace JSC {
         String m_sourceMappingURLDirective;
         TextPosition m_startPosition;
         bool m_validated : 1;
-        unsigned long m_id : sizeof(unsigned long) * 8 - 1;
+        long m_id : sizeof(long) * 8 - 1;
     };
 
     class StringSourceProvider : public SourceProvider {
