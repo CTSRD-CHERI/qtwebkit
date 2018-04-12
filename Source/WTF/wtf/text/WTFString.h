@@ -52,6 +52,8 @@ uint64_t charactersToUInt64Strict(const LChar*, size_t, bool* ok = 0, int base =
 uint64_t charactersToUInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
 intptr_t charactersToIntPtrStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
 intptr_t charactersToIntPtrStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
+long charactersToLongStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
+long charactersToLongStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
 
 WTF_EXPORT_STRING_API int charactersToInt(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
 WTF_EXPORT_STRING_API int charactersToInt(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
@@ -63,6 +65,8 @@ uint64_t charactersToUInt64(const LChar*, size_t, bool* ok = 0); // ignores trai
 uint64_t charactersToUInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 intptr_t charactersToIntPtr(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
 intptr_t charactersToIntPtr(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
+long charactersToLong(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
+long charactersToLong(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 
 // FIXME: Like the strict functions above, these give false for "ok" when there is trailing garbage.
 // Like the non-strict functions above, these return the value when there is trailing garbage.
@@ -380,12 +384,14 @@ public:
     WTF_EXPORT_STRING_API int64_t toInt64Strict(bool* ok = 0, int base = 10) const;
     WTF_EXPORT_STRING_API uint64_t toUInt64Strict(bool* ok = 0, int base = 10) const;
     WTF_EXPORT_STRING_API intptr_t toIntPtrStrict(bool* ok = 0, int base = 10) const;
+    WTF_EXPORT_STRING_API long toLongStrict(bool* ok = 0, int base = 10) const;
 
     WTF_EXPORT_STRING_API int toInt(bool* ok = 0) const;
     WTF_EXPORT_STRING_API unsigned toUInt(bool* ok = 0) const;
     WTF_EXPORT_STRING_API int64_t toInt64(bool* ok = 0) const;
     WTF_EXPORT_STRING_API uint64_t toUInt64(bool* ok = 0) const;
     WTF_EXPORT_STRING_API intptr_t toIntPtr(bool* ok = 0) const;
+    WTF_EXPORT_STRING_API long toLong(bool* ok = 0) const;
 
     // FIXME: Like the strict functions above, these give false for "ok" when there is trailing garbage.
     // Like the non-strict functions above, these return the value when there is trailing garbage.
