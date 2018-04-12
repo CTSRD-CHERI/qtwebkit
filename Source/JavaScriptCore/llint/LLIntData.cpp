@@ -85,7 +85,11 @@ void Data::performAssertions(VM& vm)
     const ptrdiff_t PtrSize = 4;
     const ptrdiff_t CallFrameHeaderSlots = 4;
 #endif
+#ifdef __CHERI_PURE_CAPABILITY__
+    const ptrdiff_t SlotSize = _MIPS_SZCAP / 8;
+#else
     const ptrdiff_t SlotSize = 8;
+#endif // __CHERI_PURE_CAPABILITY
 
     STATIC_ASSERT(sizeof(void*) == PtrSize);
     STATIC_ASSERT(sizeof(Register) == SlotSize);
