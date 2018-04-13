@@ -57,10 +57,14 @@ public:
     WEBCORE_EXPORT TextStream& operator<<(unsigned long long);
     WEBCORE_EXPORT TextStream& operator<<(float);
     WEBCORE_EXPORT TextStream& operator<<(double);
+#ifdef __CHERI__
+    WEBCORE_EXPORT TextStream& operator<<(__intcap_t);
+#endif
     WEBCORE_EXPORT TextStream& operator<<(const char*);
     WEBCORE_EXPORT TextStream& operator<<(const void*);
     WEBCORE_EXPORT TextStream& operator<<(const String&);
     WEBCORE_EXPORT TextStream& operator<<(const FormatNumberRespectingIntegers&);
+
 
     template<typename T>
     void dumpProperty(const String& name, const T& value)
