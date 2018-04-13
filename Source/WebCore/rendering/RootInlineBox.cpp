@@ -52,7 +52,9 @@ struct SameSizeAsRootInlineBox : public InlineFlowBox {
     void* pointers[3];
 };
 
+#ifndef __CHERI_PURE_CAPABILITY__
 COMPILE_ASSERT(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), RootInlineBox_should_stay_small);
+#endif
 
 typedef WTF::HashMap<const RootInlineBox*, std::unique_ptr<EllipsisBox>> EllipsisBoxMap;
 static EllipsisBoxMap* gEllipsisBoxMap = 0;
