@@ -334,7 +334,7 @@ public:
     CodeBlockHash hashFor(CodeSpecializationKind) const;
 
     const SourceCode& source() const { return m_source; }
-    intptr_t sourceID() const { return m_source.providerID(); }
+    long sourceID() const { return m_source.providerID(); }
     const String& sourceURL() const { return m_source.provider()->url(); }
     int firstLine() const { return m_firstLine; }
     void setOverrideLineNumber(int overrideLineNumber) { m_overrideLineNumber = overrideLineNumber; }
