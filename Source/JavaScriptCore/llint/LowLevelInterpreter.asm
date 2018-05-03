@@ -154,13 +154,13 @@ end
 # These declarations must match interpreter/JSStack.h.
 
 if JSVALUE64
-  if CHERI_128_PURECAP
-    const PtrSize = 16
-  elsif CHERI_256_PURECAP
-    const PtrSize = 32
-#  else
-#    const PtrSize = 8
-  end
+    if CHERI_128_PURECAP
+        const PtrSize = 16
+    elsif CHERI_256_PURECAP
+        const PtrSize = 32
+    else
+        const PtrSize = 8
+    end
     const CallFrameHeaderSlots = 5
 else
     const PtrSize = 4
@@ -171,8 +171,8 @@ if CHERI_128_PURECAP
     const SlotSize = 16
 elsif CHERI_256_PURECAP
     const SlotSize = 32
-#else
-#    const SlotSize = 8
+else
+    const SlotSize = 8
 end
 
 const JSEnvironmentRecord_variables = (sizeof JSEnvironmentRecord + SlotSize - 1) & ~(SlotSize - 1)
