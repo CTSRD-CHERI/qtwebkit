@@ -370,10 +370,10 @@ public:
 private:
     friend class JSC::DFG::StructureAbstractValue;
 
-    static const uintptr_t thinFlag = 1;
-    static const uintptr_t reservedFlag = 2;
-    static const uintptr_t flags = thinFlag | reservedFlag;
-    static const uintptr_t reservedValue = 4;
+    static const unsigned thinFlag = 1;
+    static const unsigned reservedFlag = 2;
+    static const unsigned flags = thinFlag | reservedFlag;
+    static const unsigned reservedValue = 4;
 
     static const unsigned defaultStartingSize = 4;
     
@@ -462,11 +462,11 @@ private:
             OutOfLineList::destroy(list());
     }
     
-    bool isThin() const { return m_pointer & thinFlag; }
+    bool isThin() const { return qGetLowPointerBits<thinFlag>(m_pointer); }
     
     void* pointer() const
     {
-        return bitwise_cast<void*>(m_pointer & ~flags);
+        return bitwise_cast<void*>(qClearLowPointerBits<flags>(m_pointer));
     }
     
     T singleEntry() const
@@ -495,15 +495,15 @@ private:
     }
     void set(uintptr_t pointer, bool singleEntry)
     {
-        m_pointer = pointer | (singleEntry ? thinFlag : 0) | (m_pointer & reservedFlag);
+        m_pointer = qSetLowPointerBits(m_pointer, pointer | (singleEntry ? thinFlag : 0) | qGetLowPointerBits<reservedFlag>(m_pointer));
     }
-    bool getReservedFlag() const { return m_pointer & reservedFlag; }
+    bool getReservedFlag() const { return qGetLowPointerBits<reservedFlag>(m_pointer); }
     void setReservedFlag(bool value)
     {
         if (value)
-            m_pointer |= reservedFlag;
+            m_pointer = qSetLowPointerBits(m_pointer, reservedFlag);
         else
-            m_pointer &= ~reservedFlag;
+            m_pointer = qClearLowPointerBits<reservedFlag>(m_pointer);;
     }
     
     uintptr_t m_pointer;

@@ -65,7 +65,7 @@ struct WordLockBase {
 
     bool isHeld() const
     {
-        return m_word.load(std::memory_order_acquire) & isLockedBit;
+        return qGetLowPointerBits<isLockedBit>(m_word.load(std::memory_order_acquire));
     }
 
     bool isLocked() const
@@ -76,9 +76,9 @@ struct WordLockBase {
 protected:
     friend struct TestWebKitAPI::LockInspector;
     
-    static const uintptr_t isLockedBit = 1;
-    static const uintptr_t isQueueLockedBit = 2;
-    static const uintptr_t queueHeadMask = 3;
+    static const unsigned isLockedBit = 1;
+    static const unsigned isQueueLockedBit = 2;
+    static const unsigned queueHeadMask = 3;
 
     WTF_EXPORT_PRIVATE void lockSlow();
     WTF_EXPORT_PRIVATE void unlockSlow();

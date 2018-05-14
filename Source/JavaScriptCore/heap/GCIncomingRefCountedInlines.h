@@ -35,7 +35,7 @@ template<typename T>
 bool GCIncomingRefCounted<T>::addIncomingReference(JSCell* cell)
 {
     if (!hasAnyIncoming()) {
-        m_encodedPointer = bitwise_cast<uintptr_t>(cell) | singletonFlag();
+        m_encodedPointer = qSetLowPointerBits(quintptr(cell), singletonFlag);
         this->setIsDeferred(true);
         ASSERT(hasSingleton());
         return true;
@@ -119,7 +119,7 @@ bool GCIncomingRefCounted<T>::filterIncomingReferences(FilterFunctionType& filte
         dataLog("   Shrinking to singleton.\n");
     JSCell* singleton = vectorOfCells()->at(0);
     delete vectorOfCells();
-    m_encodedPointer = bitwise_cast<uintptr_t>(singleton) | singletonFlag();
+    m_encodedPointer = qSetLowPointerBits(quintptr(singleton), singletonFlag);
     ASSERT(hasSingleton());
     return false;
 }

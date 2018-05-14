@@ -45,7 +45,7 @@ protected:
     
     T* next() const
     {
-        return reinterpret_cast<T*>(m_nextAndFlag & ~1);
+        return reinterpret_cast<T*>(qClearLowPointerBits<1u>(m_nextAndFlag));
     }
 
 private:
@@ -95,9 +95,9 @@ private:
     private:
         void addNotThreadSafe(T* handler)
         {
-            if (handler->m_nextAndFlag & 1)
+            if (qGetLowPointerBits<1u>(handler->m_nextAndFlag))
                 return;
-            handler->m_nextAndFlag = reinterpret_cast<uintptr_t>(m_first) | 1;
+            handler->m_nextAndFlag = qSetLowPointerBits(quintptr(m_first), 1u);
             m_first = handler;
         }
         

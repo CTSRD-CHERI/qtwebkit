@@ -81,7 +81,7 @@ public:
     void* getPredicated(const JSCell* owner, const Functor& functor) const
     {
         void* result = m_value;
-        if (UNLIKELY(bitwise_cast<uintptr_t>(result) & spaceBits)) {
+        if (UNLIKELY(qGetLowPointerBits<spaceBits>(quintptr(result)))) {
             if (functor())
                 return Heap::copyBarrier(owner, m_value);
         }
@@ -97,7 +97,7 @@ public:
 
     CopyState copyState() const
     {
-        return static_cast<CopyState>(bitwise_cast<uintptr_t>(m_value) & spaceBits);
+        return static_cast<CopyState>(qGetLowPointerBits<spaceBits>(quintptr(m_value)));
     }
 
     // This only works when you know that there is nobody else concurrently messing with this CopyBarrier.
@@ -107,7 +107,7 @@ public:
     {
         WTF::storeStoreFence();
         uintptr_t value = bitwise_cast<uintptr_t>(m_value);
-        value &= ~static_cast<uintptr_t>(spaceBits);
+        value = qClearLowPointerBits<spaceBits>(value);
         value |= static_cast<uintptr_t>(copyState);
         m_value = bitwise_cast<void*>(value);
     }

@@ -377,22 +377,22 @@ public:
     }
     
 private:
-    static const uintptr_t IsThinFlag        = 1;
-    static const uintptr_t StateMask         = 6;
-    static const uintptr_t StateShift        = 1;
+    static const unsigned IsThinFlag        = 1;
+    static const unsigned StateMask         = 6;
+    static const unsigned StateShift        = 1;
     
-    static bool isThin(uintptr_t data) { return data & IsThinFlag; }
+    static bool isThin(uintptr_t data) { return qGetLowPointerBits<IsThinFlag>(data); }
     static bool isFat(uintptr_t data) { return !isThin(data); }
     
     static WatchpointState decodeState(uintptr_t data)
     {
         ASSERT(isThin(data));
-        return static_cast<WatchpointState>((data & StateMask) >> StateShift);
+        return static_cast<WatchpointState>(qGetLowPointerBits<StateMask>(data) >> StateShift);
     }
     
     static uintptr_t encodeState(WatchpointState state)
     {
-        return (static_cast<uintptr_t>(state) << StateShift) | IsThinFlag;
+        return qSetLowPointerBits(qvaddr(state) << StateShift, IsThinFlag);
     }
     
     bool isThin() const { return isThin(m_data); }

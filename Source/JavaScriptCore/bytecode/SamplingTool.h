@@ -298,7 +298,7 @@ namespace JSC {
         void* encodeSample(Instruction* vPC, bool inCTIFunction = false, bool inHostFunction = false)
         {
             ASSERT(!(reinterpret_cast<intptr_t>(vPC) & 0x3));
-            return reinterpret_cast<void*>(reinterpret_cast<intptr_t>(vPC) | (static_cast<intptr_t>(inCTIFunction) << 1) | static_cast<intptr_t>(inHostFunction));
+            return reinterpret_cast<void*>(qSetLowPointerBits(quintptr(vPC), inCTIFunction << 1 | inHostFunction));
         }
 
         static void sample();
@@ -314,9 +314,9 @@ namespace JSC {
             
             bool isNull() { return !m_sample; }
             CodeBlock* codeBlock() { return m_codeBlock; }
-            Instruction* vPC() { return reinterpret_cast<Instruction*>(m_sample & ~0x3); }
-            bool inHostFunction() { return m_sample & 0x1; }
-            bool inCTIFunction() { return m_sample & 0x2; }
+            Instruction* vPC() { return reinterpret_cast<Instruction*>(qClearLowPointerBits<0x3>(m_sample)); }
+            bool inHostFunction() { return qGetLowPointerBits<0x1>(m_sample); }
+            bool inCTIFunction() { return qGetLowPointerBits<0x2>(m_sample); }
 
         private:
             intptr_t m_sample;
