@@ -227,12 +227,16 @@ namespace JSC {
 
     inline bool MarkedBlock::isAtomAligned(const void* p)
     {
-        return !(reinterpret_cast<Bits>(p) & atomAlignmentMask);
+        return !qGetLowPointerBits<atomAlignmentMask>(reinterpret_cast<Bits>(p));
     }
 
     inline MarkedBlock* MarkedBlock::blockFor(const void* p)
     {
+#if __has_builtin(__builtin_align_down)
+        return reinterpret_cast<MarkedBlock*>(__builtin_align_down(const_cast<void*>(p), blockSize));
+#else
         return reinterpret_cast<MarkedBlock*>(reinterpret_cast<Bits>(p) & blockMask);
+#endif
     }
 
     inline MarkedAllocator* MarkedBlock::allocator() const

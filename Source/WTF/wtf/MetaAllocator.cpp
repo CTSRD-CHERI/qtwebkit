@@ -232,11 +232,11 @@ void* MetaAllocator::findAndRemoveFreeSpace(size_t sizeInBytes)
         // of committed pages, since in the long run, smaller fragmentation means
         // fewer committed pages and fewer failures in general.
         
-        uintptr_t firstPage = reinterpret_cast<uintptr_t>(node->m_start) >> m_logPageSize;
-        uintptr_t lastPage = (reinterpret_cast<uintptr_t>(node->m_start) + node->m_sizeInBytes - 1) >> m_logPageSize;
+        uintptr_t firstPage = qvaddr(node->m_start) >> m_logPageSize;
+        uintptr_t lastPage = (qvaddr(node->m_start) + node->m_sizeInBytes - 1) >> m_logPageSize;
     
-        uintptr_t lastPageForLeftAllocation = (reinterpret_cast<uintptr_t>(node->m_start) + sizeInBytes - 1) >> m_logPageSize;
-        uintptr_t firstPageForRightAllocation = (reinterpret_cast<uintptr_t>(node->m_start) + node->m_sizeInBytes - sizeInBytes) >> m_logPageSize;
+        uintptr_t lastPageForLeftAllocation = (qvaddr(node->m_start) + sizeInBytes - 1) >> m_logPageSize;
+        uintptr_t firstPageForRightAllocation = (qvaddr(node->m_start) + node->m_sizeInBytes - sizeInBytes) >> m_logPageSize;
         
         if (lastPageForLeftAllocation - firstPage + 1 <= lastPage - firstPageForRightAllocation + 1) {
             // Allocate in the left side of the returned chunk, and slide the node to the right.
@@ -245,16 +245,16 @@ void* MetaAllocator::findAndRemoveFreeSpace(size_t sizeInBytes)
             m_freeSpaceStartAddressMap.remove(node->m_start);
             
             node->m_sizeInBytes -= sizeInBytes;
-            node->m_start = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(node->m_start) + sizeInBytes);
+            node->m_start = reinterpret_cast<void*>(qvaddr(node->m_start) + sizeInBytes);
             
             m_freeSpaceSizeMap.insert(node);
             m_freeSpaceStartAddressMap.add(node->m_start, node);
         } else {
             // Allocate in the right size of the returned chunk, and slide the node to the left;
             
-            result = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(node->m_start) + node->m_sizeInBytes - sizeInBytes);
+            result = reinterpret_cast<void*>(qvaddr(node->m_start) + node->m_sizeInBytes - sizeInBytes);
             
-            m_freeSpaceEndAddressMap.remove(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(node->m_start) + node->m_sizeInBytes));
+            m_freeSpaceEndAddressMap.remove(reinterpret_cast<void*>(qvaddr(node->m_start) + node->m_sizeInBytes));
             
             node->m_sizeInBytes -= sizeInBytes;
             
@@ -396,15 +396,15 @@ void MetaAllocator::addFreeSpace(void* start, size_t sizeInBytes)
 
 void MetaAllocator::incrementPageOccupancy(void* address, size_t sizeInBytes)
 {
-    uintptr_t firstPage = reinterpret_cast<uintptr_t>(address) >> m_logPageSize;
-    uintptr_t lastPage = (reinterpret_cast<uintptr_t>(address) + sizeInBytes - 1) >> m_logPageSize;
+    uintptr_t firstPage = qvaddr(address) >> m_logPageSize;
+    uintptr_t lastPage = (qvaddr(address) + sizeInBytes - 1) >> m_logPageSize;
     
     for (uintptr_t page = firstPage; page <= lastPage; ++page) {
         HashMap<uintptr_t, size_t>::iterator iter = m_pageOccupancyMap.find(page);
         if (iter == m_pageOccupancyMap.end()) {
             m_pageOccupancyMap.add(page, 1);
             m_bytesCommitted += m_pageSize;
-            notifyNeedPage(reinterpret_cast<void*>(page << m_logPageSize));
+            notifyNeedPage(reinterpret_cast<void*>(qvaddr(page) << m_logPageSize));
         } else
             iter->value++;
     }

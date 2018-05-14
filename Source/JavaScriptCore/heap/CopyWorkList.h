@@ -47,8 +47,8 @@ public:
         ASSERT(static_cast<uintptr_t>(token) <= mask);
     }
     
-    JSCell* cell() const { return bitwise_cast<JSCell*>(m_value & ~static_cast<uintptr_t>(mask)); }
-    CopyToken token() const { return static_cast<CopyToken>(m_value & mask); }
+    JSCell* cell() const { return bitwise_cast<JSCell*>(qClearLowPointerBits<mask>(m_value)); }
+    CopyToken token() const { return static_cast<CopyToken>(qGetLowPointerBits<mask>(m_value)); }
     
 private:
     static const unsigned requiredAlignment = 8;

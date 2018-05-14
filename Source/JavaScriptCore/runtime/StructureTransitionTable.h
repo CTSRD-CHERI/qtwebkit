@@ -89,7 +89,7 @@ inline IndexingType newIndexingType(IndexingType oldType, NonPropertyTransition 
 }
 
 class StructureTransitionTable {
-    static const intptr_t UsingSingleSlotFlag = 1;
+    static const unsigned UsingSingleSlotFlag = 1;
 
     
     struct Hash {
@@ -138,7 +138,7 @@ private:
 
     bool isUsingSingleSlot() const
     {
-        return m_data & UsingSingleSlotFlag;
+        return qGetLowPointerBits<UsingSingleSlotFlag>(m_data);
     }
 
     TransitionMap* map() const
@@ -150,7 +150,7 @@ private:
     WeakImpl* weakImpl() const
     {
         ASSERT(isUsingSingleSlot());
-        return reinterpret_cast<WeakImpl*>(m_data & ~UsingSingleSlotFlag);
+        return reinterpret_cast<WeakImpl*>(qClearLowPointerBits<UsingSingleSlotFlag>(m_data));
     }
 
     void setMap(TransitionMap* map)
