@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(WebKit)
 
+# only find static libraries
+set(CMAKE_SHARED_LIBRARY_SUFFIX ".a")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+set(CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES ".a")
+set(CMAKE_SHARED_LIBRARY_SUFFIX ".a")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+
 # This should be removed once we require CMake 3.3.
 if (POLICY CMP0058)
     cmake_policy(SET CMP0058 NEW)
