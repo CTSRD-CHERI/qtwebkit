@@ -76,6 +76,8 @@
 
 extern "C" {
 
+WTFLogChannel CheriDebugLog = { WTFLogChannelOff, "CHERI" };
+
 WTF_ATTRIBUTE_PRINTF(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args)
 {
@@ -194,7 +196,10 @@ static void printCallSite(const char* file, int line, const char* function)
     // By using this format, which matches the format used by MSVC for compiler errors, developers
     // using Visual Studio can double-click the file/line number in the Output Window to have the
     // editor navigate to that line of code. It seems fine for other developers, too.
-    printf_stderr_common("%s(%d) : %s\n", file, line, function);
+    if (function)
+        printf_stderr_common("\e[32m%s\e[0m(\e[31m%d\e[0m) : \e[33m%s\e[0m\n", file, line, function);
+    else
+        printf_stderr_common("\e[32m%s\e[0m(\e[31m%d\e[0m)\n", file, line);
 #endif
 }
 
