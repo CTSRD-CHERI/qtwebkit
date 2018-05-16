@@ -942,14 +942,22 @@ public:
 
     static inline const TypeInfo typeInfo() { return TypeInfo(FinalObjectType, StructureFlags); }
     static const IndexingType defaultIndexingType = NonArray;
-        
-    static const unsigned defaultSize = 64;
+
+#ifdef __CHERI_PURE_CAPABILITY__
+    static const unsigned defaultSize = 6 * (_MIPS_SZCAP/8); //XXXKG: 6 pointers
+#else
+    static const unsigned defaultSize = 64; //XXXKG: 6 pointers/elements
+#endif
     static inline unsigned defaultInlineCapacity()
     {
         return (defaultSize - allocationSize(0)) / sizeof(WriteBarrier<Unknown>);
     }
 
-    static const unsigned maxSize = 512;
+#ifdef __CHERI_PURE_CAPABILITY__
+    static const unsigned maxSize = 64 * (_MIPS_SZCAP/8); ///XXXKG: 64 pointers/elements
+#else
+    static const unsigned maxSize = 512; ///XXXKG: 64 pointers/elements
+#endif
     static inline unsigned maxInlineCapacity()
     {
         return (maxSize - allocationSize(0)) / sizeof(WriteBarrier<Unknown>);
@@ -1171,6 +1179,8 @@ ALWAYS_INLINE bool JSObject::getPropertySlot(ExecState* exec, PropertyName prope
             return object->getNonIndexPropertySlot(exec, propertyName, slot);
         }
         Structure& structure = *structureIDTable.get(object->structureID());
+        LOG_CHERI("object: %p\n", object);
+        LOG_CHERI("object->structureID(): %d\n", object->structureID());
         if (object->getOwnNonIndexPropertySlot(vm, structure, propertyName, slot))
             return true;
         JSValue prototype = structure.storedPrototype();
@@ -1417,6 +1427,11 @@ inline void JSObject::putDirectWithoutTransition(VM& vm, PropertyName propertyNa
     bool shouldOptimize = false;
     structure->willStoreValueForNewTransition(vm, propertyName, value, shouldOptimize);
     setStructureAndButterfly(vm, structure, newButterfly);
+    //AtomicStringImpl* str = propertyName.publicName();
+    //LOG_CHERI("[%d] Property %s at offset %d\n", this->structure()->id(), str ? String(str).ascii().data() : "<null>", offset);
+    if (propertyName == vm.propertyNames->Math
+      || propertyName == "sin" || propertyName == "console")
+      LOG_CHERI("  --> %s offset: %d, value: %p\n", propertyName.publicName()->utf8().data(), offset, (void*)value.asInt64());
     putDirect(vm, offset, value);
 }
 

@@ -731,8 +731,11 @@ inline bool JSValue::toBoolean(ExecState* exec) const
 
 inline JSString* JSValue::toString(ExecState* exec) const
 {
-    if (isString())
+    if (isString()) {
+        LOG_CHERI("IS STRING\n");
         return jsCast<JSString*>(asCell());
+    }
+    LOG_CHERI("NOT STRING\n");
     bool returnEmptyStringOnError = true;
     return toStringSlowCase(exec, returnEmptyStringOnError);
 }

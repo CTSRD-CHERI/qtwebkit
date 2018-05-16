@@ -184,14 +184,14 @@ const StackAlignmentMask = StackAlignment - 1
 
 const CallerFrameAndPCSize = 2 * PtrSize
 
-const CallerFrame = 0
-const ReturnPC = CallerFrame + PtrSize
-const CodeBlock = ReturnPC + PtrSize
-const Callee = CodeBlock + SlotSize
-const ArgumentCount = Callee + SlotSize
-const ThisArgumentOffset = ArgumentCount + SlotSize
-const FirstArgumentOffset = ThisArgumentOffset + SlotSize
-const CallFrameHeaderSize = ThisArgumentOffset
+const CallerFrame = 0 # 0
+const ReturnPC = CallerFrame + PtrSize # 16
+const CodeBlock = ReturnPC + PtrSize # 32
+const Callee = CodeBlock + SlotSize # 48
+const ArgumentCount = Callee + SlotSize # 64
+const ThisArgumentOffset = ArgumentCount + SlotSize # 80
+const FirstArgumentOffset = ThisArgumentOffset + SlotSize # 96
+const CallFrameHeaderSize = ThisArgumentOffset # 80
 
 # Some value representation constants.
 if JSVALUE64
@@ -290,15 +290,15 @@ if JSVALUE64
     end
 
     macro loadisFromInstruction(offset, dest)
-        loadis offset * 8[PB, PC, 8], dest
+        loadis offset * PtrSize[PB, PC, 8], dest
     end
     
     macro loadpFromInstruction(offset, dest)
-        loadp offset * 8[PB, PC, 8], dest
+        loadp offset * PtrSize[PB, PC, 8], dest
     end
     
     macro storepToInstruction(value, offset)
-        storep value, offset * 8[PB, PC, 8]
+        storep value, offset * PtrSize[PB, PC, 8]
     end
 
 else
@@ -319,11 +319,24 @@ else
 end
 
 # Constants for reasoning about value representation.
+# XXXKG: The payload offset is used to get the least-significant 32-bits
 if BIG_ENDIAN
     const TagOffset = 0
-    const PayloadOffset = 4
+    if CHERI_128_PURECAP
+        const PayloadOffset = 12
+    elsif CHERI_256_PURECAP
+        const PayloadOffset = 28
+    else
+        const PayloadOffset = 4
+    end
 else
-    const TagOffset = 4
+    if CHERI_128_PURECAP
+        const TagOffset = 12
+    elsif CHERI_256_PURECAP
+        const TagOffset = 28
+    else
+        const TagOffset = 4
+    end
     const PayloadOffset = 0
 end
 
@@ -395,7 +408,13 @@ end
 # This must match wtf/Vector.h
 const VectorBufferOffset = 0
 if JSVALUE64
-    const VectorSizeOffset = 12
+    if CHERI_128_PURECAP
+        const VectorSizeOffset = 20
+    elsif CHERI_256_PURECAP
+        const VectorSizeOffset = 36
+    else
+        const VectorSizeOffset = 12
+    end
 else
     const VectorSizeOffset = 8
 end
@@ -971,22 +990,33 @@ macro functionInitialization(profileArgSkip)
     assert(macro (ok) bpgteq t0, 0, ok end)
     btpz t0, .argumentProfileDone
     loadp CodeBlock::m_argumentValueProfiles + VectorBufferOffset[t1], t3
+    printp t0, "before mulp"
+    printp t2, "before mulp"
     mulp sizeof ValueProfile, t0, t2 # Aaaaahhhh! Need strength reduction!
+    printp t2, "after mulp"
     lshiftp 3, t0
     addp t2, t3
 .argumentProfileLoop:
     if JSVALUE64
-        loadq ThisArgumentOffset - 8 + profileArgSkip * 8[cfr, t0], t2
+        printp cfr
+        printp t0
+        printi profileArgSkip, "profileArgSkip"
+        printi ThisArgumentOffset, "ThisArgumentOffset"
+        loadp ThisArgumentOffset - PtrSize + profileArgSkip * PtrSize[cfr, t0], t2
+        printp t2, "arg profile loop"
+        printp t3, "before subp"
+        printi sizeof ValueProfile, "sizeof ValueProfile"
         subp sizeof ValueProfile, t3
-        storeq t2, profileArgSkip * sizeof ValueProfile + ValueProfile::m_buckets[t3]
+        printp t3, "after subp"
+        storep t2, profileArgSkip * sizeof ValueProfile + ValueProfile::m_buckets[t3]
     else
-        loadi ThisArgumentOffset + TagOffset - 8 + profileArgSkip * 8[cfr, t0], t2
+        loadi ThisArgumentOffset + TagOffset - PtrSize + profileArgSkip * PtrSize[cfr, t0], t2
         subp sizeof ValueProfile, t3
         storei t2, profileArgSkip * sizeof ValueProfile + ValueProfile::m_buckets + TagOffset[t3]
-        loadi ThisArgumentOffset + PayloadOffset - 8 + profileArgSkip * 8[cfr, t0], t2
+        loadi ThisArgumentOffset + PayloadOffset - PtrSize + profileArgSkip * PtrSize[cfr, t0], t2
         storei t2, profileArgSkip * sizeof ValueProfile + ValueProfile::m_buckets + PayloadOffset[t3]
     end
-    baddpnz -8, t0, .argumentProfileLoop
+    baddpnz -PtrSize, t0, .argumentProfileLoop
 .argumentProfileDone:
 end
 

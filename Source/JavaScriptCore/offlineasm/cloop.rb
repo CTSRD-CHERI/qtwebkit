@@ -48,6 +48,7 @@ def cloopMapType(type)
     when :castToDouble;   ".castToDouble"
     when :castToInt64;    ".castToInt64"
     when :opcode;         ".opcode"
+    when :cap;            ".i"
     else;
         raise "Unsupported type"
     end
@@ -169,6 +170,7 @@ class Address
         when :int32;        int32MemRef
         when :int64;        int64MemRef
         when :int;          intMemRef
+        when :int8Ptr;      intMemRef
         when :uint8;        uint8MemRef
         when :uint32;       uint32MemRef
         when :uint64;       uint64MemRef
@@ -354,9 +356,16 @@ end
 
 def cloopEmitOperation(operands, type, operator)
     raise unless type == :int || type == :uint || type == :int32 || type == :uint32 || \
-        type == :int64 || type == :uint64 || type == :double
+        type == :int64 || type == :uint64 || type == :double || type == :cap
     if operands.size == 3
-        $asm.putc "#{operands[2].clValue(type)} = #{operands[0].clValue(type)} #{operator} #{operands[1].clValue(type)};"
+        if type == :cap and ($cheriCapSize == 128 or $cheriCapSize == 256)
+            op0 = "__builtin_cheri_address_get(#{operands[0].clValue(:int8Ptr)})"
+            op1 = "__builtin_cheri_address_get(#{operands[1].clValue(:int8Ptr)})"
+        else
+            op0 = "#{operands[0].clValue(type)}"
+            op1 = "#{operands[1].clValue(type)}"
+        end
+        $asm.putc "#{operands[2].clValue(type)} = #{op0} #{operator} #{op1};"
         if operands[2].is_a? RegisterID and (type == :int32 or type == :uint32)
             $asm.putc "#{operands[2].clDump}.clearHighWord();" # Just clear it. It does nothing on the 32-bit port.
         end
@@ -372,7 +381,7 @@ end
 
 def cloopEmitShiftOperation(operands, type, operator)
     raise unless type == :int || type == :uint || type == :int32 || type == :uint32 || type == :int64 || type == :uint64
-    if operands.size == 3
+    if operands.size == 3 #XXXKG: doesn't seem to be any JSC asm code that actually requires the 3-operand case
         $asm.putc "#{operands[2].clValue(type)} = #{operands[1].clValue(type)} #{operator} (#{operands[0].clValue(:int)} & 0x1f);"
         if operands[2].is_a? RegisterID and (type == :int32 or type == :uint32)
             $asm.putc "#{operands[2].clDump}.clearHighWord();" # Just clear it. It does nothing on the 32-bit port.
@@ -380,7 +389,23 @@ def cloopEmitShiftOperation(operands, type, operator)
     else
         raise unless operands.size == 2
         raise unless not operands[1].is_a? Immediate
-        $asm.putc "#{operands[1].clValue(type)} = #{operands[1].clValue(type)} #{operator} (#{operands[0].clValue(:int)} & 0x1f);"
+        if operands[0].is_a? Immediate
+            shiftOperand = Immediate.new(operands[0].codeOrigin, case operands[0].value
+              when 3
+                  if $cheriCapSize == 128
+                      4
+                  elsif $cheriCapSize == 256
+                      5
+                  else
+                      3
+                  end
+              else
+                  operands[0].value
+              end)
+            $asm.putc "#{operands[1].clValue(type)} = #{operands[1].clValue(type)} #{operator} (#{shiftOperand.clValue(type)} & 0x1f);"
+        else
+            $asm.putc "#{operands[1].clValue(type)} = #{operands[1].clValue(type)} #{operator} (#{operands[0].clValue(:int)} & 0x1f);"
+        end
         if operands[1].is_a? RegisterID and (type == :int32 or type == :uint32)
             $asm.putc "#{operands[1].clDump}.clearHighWord();" # Just clear it. It does nothing on the 32-bit port.
         end
@@ -394,6 +419,31 @@ def cloopEmitUnaryOperation(operands, type, operator)
     $asm.putc "#{operands[0].clValue(type)} = #{operator}#{operands[0].clValue(type)};"
     if operands[0].is_a? RegisterID and (type == :int32 or type == :uint32)
         $asm.putc "#{operands[0].clDump}.clearHighWord();" # Just clear it. It does nothing on the 32-bit port.
+    end
+end
+
+def cloopEmitPrint(operands, type)
+    formatSpecifier = case type
+    when :int;  "%p"
+    when :int32; "%d"
+    when :int64; "%ld"
+    when :cap; "0x%lx"
+    else
+        raise "Unexpected Address type: #{type}"
+    end
+    if operands.size == 2
+        contextString = " (#{operands[1].value})"
+    else
+        contextString = ""
+    end
+
+    if type == :cap
+        if contextString != ""
+            contextString += " "
+        end
+        $asm.putc "LOG_CHERI(\"#{contextString}#{operands[0].clValue(:int)}: %p, #{operands[0].clDump}.base: #{formatSpecifier}, #{operands[0].clDump}.offset: #{formatSpecifier}, #{operands[0].clDump}.length: %ld\\n\", #{operands[0].clValue(:int)}, __builtin_cheri_base_get(#{operands[0].clValue(:int8Ptr)}), __builtin_cheri_offset_get(#{operands[0].clValue(:int8Ptr)}), __builtin_cheri_length_get(#{operands[0].clValue(:int8Ptr)}));"
+    else
+        $asm.putc "LOG_CHERI(\"#{operands[0].clValue(type)}#{contextString}: #{formatSpecifier}\\n\", #{operands[0].clValue(type)});"
     end
 end
 
@@ -420,7 +470,11 @@ end
 # conditionTest should contain a string that provides a comparator and a RHS
 # value e.g. "< 0".
 def cloopGenerateConditionExpression(operands, type, conditionTest)
-    op1 = operands[0].clValue(type)
+    if type == :int and ($cheriCapSize == 128 or $cheriCapSize == 256)
+        op1 = "__builtin_cheri_address_get(#{operands[0].clValue(:int8Ptr)})"
+    else
+        op1 = operands[0].clValue(type)
+    end
 
     # The operands must consist of 2 or 3 values.
     case operands.size
@@ -556,7 +610,7 @@ class Instruction
     @@didReturnFromJSLabelCounter = 0
 
     def lowerC_LOOP
-        $asm.codeOrigin codeOriginString if $enableCodeOriginComments
+        $asm.codeOrigin codeOriginString.gsub(/\/.*\/LowLevelInterpreter/,"") if $enableCodeOriginComments
         $asm.annotation annotation if $enableInstrAnnotations && (opcode != "cloopDo")
 
         case opcode
@@ -616,6 +670,8 @@ class Instruction
         when "mulp"
             cloopEmitOperation(operands, :int, "*")
 
+        when "subc"
+            cloopEmitOperation(operands, :cap, "-")
         when "subi"
             cloopEmitOperation(operands, :int32, "-")
         when "subq"
@@ -633,10 +689,27 @@ class Instruction
         when "noti"
             cloopEmitUnaryOperation(operands, :int32, "!")
 
+        when "printc"
+            if $cheriCapSize == 128 or $cheriCapSize == 256
+                cloopEmitPrint(operands, :cap)
+            else
+                cloopEmitPrint(operands, :int) # treat as printp in non-CHERI case
+            end
+
+        when "printi"
+            cloopEmitPrint(operands, :int32)
+
+        when "printp"
+            cloopEmitPrint(operands, :int)
+
+        when "printq"
+            cloopEmitPrint(operands, :int64)
+
         when "loadi"
             $asm.putc "#{operands[1].clValue(:uint)} = #{operands[0].uint32MemRef};"
             # There's no need to call clearHighWord() here because the above will
             # automatically take care of 0 extension.
+            # XXXKG: Shouldn't this be uint32 instead of uint?
         when "loadis"
             $asm.putc "#{operands[1].clValue(:int)} = #{operands[0].int32MemRef};"
         when "loadq"

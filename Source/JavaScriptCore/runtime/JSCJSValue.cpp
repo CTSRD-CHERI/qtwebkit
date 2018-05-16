@@ -114,6 +114,7 @@ JSObject* JSValue::synthesizePrototype(ExecState* exec) const
         if (isString())
             return exec->lexicalGlobalObject()->stringPrototype();
         ASSERT(isSymbol());
+        LOG_CHERI("isSymbol(): %d\n", isSymbol());
         return exec->lexicalGlobalObject()->symbolPrototype();
     }
 

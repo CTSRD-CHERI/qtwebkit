@@ -133,10 +133,10 @@ inline bool is8ByteAligned(void* p)
 template<typename ToType, typename FromType>
 inline ToType bitwise_cast(FromType from)
 {
-#ifndef __CHERI_PURE_CAPABILITY__
-    char (*__kaboom1)[sizeof(FromType)] = 1;
-    char (*__kaboom2)[sizeof(ToType)] = 1;
-#endif
+//#ifndef __CHERI_PURE_CAPABILITY__
+    //char (*__kaboom1)[sizeof(FromType)] = 1;
+    //char (*__kaboom2)[sizeof(ToType)] = 1;
+//#endif
     static_assert(sizeof(FromType) == sizeof(ToType), "bitwise_cast size of FromType and ToType must be equal!");
     union {
         FromType from;
