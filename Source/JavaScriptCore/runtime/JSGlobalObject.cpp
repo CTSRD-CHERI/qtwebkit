@@ -446,7 +446,7 @@ m_ ## lowerName ## Prototype->putDirectWithoutTransition(vm, vm.propertyNames->c
     m_functionPrototype->putDirectWithoutTransition(vm, vm.propertyNames->constructor, functionConstructor, DontEnum);
     m_arrayPrototype->setConstructor(vm, arrayConstructor, DontEnum);
     m_regExpPrototype->putDirectWithoutTransition(vm, vm.propertyNames->constructor, m_regExpConstructor.get(), DontEnum);
-    
+
     putDirectWithoutTransition(vm, vm.propertyNames->Object, objectConstructor, DontEnum);
     putDirectWithoutTransition(vm, vm.propertyNames->Function, functionConstructor, DontEnum);
     putDirectWithoutTransition(vm, vm.propertyNames->Array, arrayConstructor, DontEnum);
@@ -477,7 +477,15 @@ putDirectWithoutTransition(vm, vm.propertyNames-> jsName, lowerName ## Construct
     putDirectWithoutTransition(vm, vm.propertyNames->Intl, intl, DontEnum);
 #endif // ENABLE(INTL)
     putDirectWithoutTransition(vm, vm.propertyNames->JSON, JSONObject::create(vm, JSONObject::createStructure(vm, this, m_objectPrototype.get())), DontEnum);
-    putDirectWithoutTransition(vm, vm.propertyNames->Math, MathObject::create(vm, this, MathObject::createStructure(vm, this, m_objectPrototype.get())), DontEnum);
+    Structure* mathStructure = MathObject::createStructure(vm, this, m_objectPrototype.get());
+    MathObject* mathObject = MathObject::create(vm, this, mathStructure);
+    LOG_CHERI("Address of global object: %p\n", this);
+    LOG_CHERI("Creating Math property\n");
+    LOG_CHERI("  --> structure ID: %d\n", mathStructure->id());
+    LOG_CHERI("  --> structure addr: %p\n", mathStructure);
+    LOG_CHERI("  --> object addr: %p\n", mathObject);
+    LOG_CHERI("  --> structure type: %d\n", mathStructure->type());
+    putDirectWithoutTransition(vm, vm.propertyNames->Math, mathObject, DontEnum);
     putDirectWithoutTransition(vm, vm.propertyNames->Reflect, ReflectObject::create(vm, this, ReflectObject::createStructure(vm, this, m_objectPrototype.get())), DontEnum);
 
     JSTypedArrayViewConstructor* typedArraySuperConstructor = JSTypedArrayViewConstructor::create(vm, this, JSTypedArrayViewConstructor::createStructure(vm, this, m_functionPrototype.get()), typedArrayProto, speciesGetterSetter);
@@ -597,8 +605,15 @@ putDirectWithoutTransition(vm, vm.propertyNames-> jsName, lowerName ## Construct
     m_linkTimeConstants[static_cast<unsigned>(LinkTimeConstant::DefinePropertyFunction)] = m_definePropertyFunction.get();
 
     ConsolePrototype* consolePrototype = ConsolePrototype::create(vm, this, ConsolePrototype::createStructure(vm, this, m_objectPrototype.get()));
-    m_consoleStructure.set(vm, this, JSConsole::createStructure(vm, this, consolePrototype));
+    Structure* consoleStructure = JSConsole::createStructure(vm, this, consolePrototype);
+    m_consoleStructure.set(vm, this, consoleStructure);
     JSConsole* consoleObject = JSConsole::create(vm, m_consoleStructure.get());
+    LOG_CHERI("Creating console property\n");
+    LOG_CHERI("  --> structure ID: %d\n", consoleObject->structureID());
+    LOG_CHERI("  --> structure addr: %p\n", consoleStructure);
+    LOG_CHERI("  --> object addr: %p\n", consoleObject);
+    LOG_CHERI("  --> structure type: %d\n", consoleStructure->type());
+    LOG_CHERI("  --> object type: %d\n", consoleObject->type());
     putDirectWithoutTransition(vm, Identifier::fromString(exec, "console"), consoleObject, DontEnum);
 
     if (UNLIKELY(Options::useDollarVM())) {
