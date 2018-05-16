@@ -133,6 +133,8 @@ typedef struct {
     const char* name;
 } WTFLogChannel;
 
+extern WTFLogChannel CheriDebugLog;
+
 WTF_EXPORT_PRIVATE void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
 WTF_EXPORT_PRIVATE void WTFReportAssertionFailureWithMessage(const char* file, int line, const char* function, const char* assertion, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
 WTF_EXPORT_PRIVATE void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion);
@@ -383,6 +385,7 @@ template<int s, int t> struct check_size {
 #else
 #define LOG_VERBOSE(channel, ...) WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, &JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
 #endif
+#define LOG_CHERI(...) WTFLogVerbose(__FILE__, __LINE__, NULL, &CheriDebugLog, __VA_ARGS__)
 
 /* RELEASE_ASSERT */
 
