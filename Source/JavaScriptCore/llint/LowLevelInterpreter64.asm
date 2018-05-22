@@ -520,7 +520,7 @@ end
 
 macro storeStructureWithTypeInfo(cell, structure, scratch)
     loadq Structure::m_blob + StructureIDBlob::u.doubleWord[structure], scratch
-    storeq scratch, JSCell::m_structureID[cell]
+    storeq scratch, JSCell::m_structureID[cell] //XXXKG: m_structureID is uint32_t on JSVALUE64
 end
 
 # Entrypoints into the interpreter.
@@ -677,7 +677,7 @@ _llint_op_new_object:
     loadp ObjectAllocationProfile::m_structure[t0], t2
     allocateJSObject(t1, t2, t0, t3, .opNewObjectSlow)
     loadisFromInstruction(1, t1)
-    storeq t0, [cfr, t1, 8]
+    storep t0, [cfr, t1, 8]
     dispatch(4)
 
 .opNewObjectSlow:
@@ -1267,13 +1267,13 @@ macro storePropertyAtVariableOffset(propertyOffsetAsInt, objectAndStorage, value
     bilt propertyOffsetAsInt, firstOutOfLineOffset, .isInline
     loadp JSObject::m_butterfly[objectAndStorage], objectAndStorage
     copyBarrier(objectAndStorage, slow)
-    negi propertyOffsetAsInt
-    sxi2q propertyOffsetAsInt, propertyOffsetAsInt
+    negp propertyOffsetAsInt
+    #sxi2q propertyOffsetAsInt, propertyOffsetAsInt
     jmp .ready
 .isInline:
-    addp sizeof JSObject - (firstOutOfLineOffset - 2) * 8, objectAndStorage
+    addp sizeof JSObject - (firstOutOfLineOffset - 2) * PtrSize, objectAndStorage
 .ready:
-    storeq value, (firstOutOfLineOffset - 2) * PtrSize[objectAndStorage, propertyOffsetAsInt, 8]
+    storep value, (firstOutOfLineOffset - 2) * PtrSize[objectAndStorage, propertyOffsetAsInt, 8]
 end
 
 _llint_op_get_by_id:
