@@ -56,6 +56,7 @@ MACRO_INSTRUCTIONS =
      "loadbs",
      "loadh",
      "loadhs",
+     "printb",
      "printc",
      "printi",
      "printp",

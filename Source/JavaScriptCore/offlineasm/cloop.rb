@@ -425,6 +425,7 @@ end
 def cloopEmitPrint(operands, type)
     formatSpecifier = case type
     when :int;  "%p"
+    when :int8;  "%c"
     when :int32; "%d"
     when :int64; "%ld"
     when :cap; "0x%lx"
@@ -688,6 +689,9 @@ class Instruction
 
         when "noti"
             cloopEmitUnaryOperation(operands, :int32, "!")
+
+        when "printb"
+            cloopEmitPrint(operands, :int8)
 
         when "printc"
             if $cheriCapSize == 128 or $cheriCapSize == 256
