@@ -283,10 +283,6 @@ struct CLoopRegister {
 // The llint C++ interpreter loop:
 //
 
-    CLoopRegister t0, t1, t2, t3, t5, t7, sp, cfr, lr, pc;
-#if USE(JSVALUE64)
-    CLoopRegister pcBase, tagTypeNumber, tagMask;
-#endif
 JSValue CLoop::execute(OpcodeID entryOpcodeID, void* executableAddress, VM* vm, ProtoCallFrame* protoCallFrame, bool isInitializationPass)
 {
     #define CAST reinterpret_cast
@@ -356,15 +352,19 @@ JSValue CLoop::execute(OpcodeID entryOpcodeID, void* executableAddress, VM* vm, 
     // 2. 32 bit result values will be in the low 32-bit of t0.
     // 3. 64 bit result values will be in t0.
 
+    CLoopRegister t0, t1, t2, t3, t5, t7, sp, cfr, lr, pc;
+#if USE(JSVALUE64)
+    CLoopRegister pcBase, tagTypeNumber, tagMask;
+#endif
     CLoopDoubleRegister d0, d1;
 
     lr.opcode = getOpcode(llint_return_to_host);
     sp.vp = vm->interpreter->stack().topOfStack() + 1;
     cfr.callFrame = vm->topCallFrame;
-#ifndef NDEBUG
+//#ifndef NDEBUG
     void* startSP = sp.vp;
     CallFrame* startCFR = cfr.callFrame;
-#endif
+//#endif
 
     // Initialize the incoming args for doVMEntryToJavaScript:
     t0.vp = executableAddress;
@@ -377,6 +377,7 @@ JSValue CLoop::execute(OpcodeID entryOpcodeID, void* executableAddress, VM* vm, 
     LOG_CHERI("LowLevelInterpreter: addr(protoCallFrame->codeBlockValue): %p\n", &protoCallFrame->codeBlockValue);
     LOG_CHERI("LowLevelInterpreter: protoCallFrame->codeBlockValue: %p\n", protoCallFrame->codeBlockValue);
     LOG_CHERI("arg count: %d\n", *CAST<uint32_t*>(((char*)protoCallFrame)+64));
+    LOG_CHERI("start CFR: %p\n", cfr.callFrame);
 
 #if USE(JSVALUE64)
     // For the ASM llint, JITStubs takes care of this initialization. We do
@@ -469,6 +470,7 @@ JSValue CLoop::execute(OpcodeID entryOpcodeID, void* executableAddress, VM* vm, 
 #else
             JSValue ret = JSValue::decode(t0.encodedJSValue);
             LOG_CHERI("ret: %p\n", ret.u.asInt64);
+            LOG_CHERI("startCFR: %p, cfr.callFrame: %p\n", startCFR, cfr.callFrame);
             return ret;
 #endif
         }
@@ -485,6 +487,8 @@ JSValue CLoop::execute(OpcodeID entryOpcodeID, void* executableAddress, VM* vm, 
             t0.i = result.payload();
 #else
             t0.encodedJSValue = JSValue::encode(result);
+            LOG_CHERI("t0.encodedJSValue: %p\n", t0.encodedJSValue);
+            LOG_CHERI("cfr.i: %p\n", cfr.i);
 #endif
             opcode = lr.opcode;
             DISPATCH_OPCODE();
