@@ -515,12 +515,20 @@ inline JSValue::JSValue(int i)
 inline double JSValue::asDouble() const
 {
     ASSERT(isDouble());
+#ifdef __CHERI_PURE_CAPABILITY__
+    return reinterpretInt64ToDouble(__builtin_cheri_address_get(u.ptr) - DoubleEncodeOffset);
+#else
     return reinterpretInt64ToDouble(u.asInt64 - DoubleEncodeOffset);
+#endif
 }
 
 inline bool JSValue::isNumber() const
 {
+#ifdef __CHERI_PURE_CAPABILITY__
+    return __builtin_cheri_address_get(u.ptr) & TagTypeNumber;
+#else
     return u.asInt64 & TagTypeNumber;
+#endif
 }
 
 ALWAYS_INLINE JSCell* JSValue::asCell() const
