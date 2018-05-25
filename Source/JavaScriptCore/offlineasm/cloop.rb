@@ -416,7 +416,12 @@ def cloopEmitUnaryOperation(operands, type, operator)
     raise unless type == :int || type == :uint || type == :int32 || type == :uint32 || type == :int64 || type == :uint64
     raise unless operands.size == 1
     raise unless not operands[0].is_a? Immediate
-    $asm.putc "#{operands[0].clValue(type)} = #{operator}#{operands[0].clValue(type)};"
+    if type == :int and ($cheriCapSize == 128 or $cheriCapSize == 256)
+        op = "__builtin_cheri_address_get(#{operands[0].clValue(:int8Ptr)})"
+    else
+        op = "#{operands[0].clValue(type)}"
+    end
+    $asm.putc "#{operands[0].clValue(type)} = #{operator}#{op};"
     if operands[0].is_a? RegisterID and (type == :int32 or type == :uint32)
         $asm.putc "#{operands[0].clDump}.clearHighWord();" # Just clear it. It does nothing on the 32-bit port.
     end
@@ -463,7 +468,22 @@ end
 
 
 def cloopEmitCompareAndBranch(operands, type, comparator)
-    $asm.putc "if (#{operands[0].clValue(type)} #{comparator} #{operands[1].clValue(type)})"
+    if (type == :int or type == :uint) and ($cheriCapSize == 128 or $cheriCapSize == 256)
+        if operands[0].is_a? RegisterID
+            op0 = "__builtin_cheri_address_get(#{operands[0].clValue(:int8Ptr)})"
+        else
+            op0 = "#{operands[0].clValue(type)}"
+        end
+        if operands[1].is_a? RegisterID
+            op1 = "__builtin_cheri_address_get(#{operands[1].clValue(:int8Ptr)})"
+        else
+            op1 = "#{operands[1].clValue(type)}"
+        end
+    else
+        op0 = "#{operands[0].clValue(type)}"
+        op1 = "#{operands[1].clValue(type)}"
+    end
+    $asm.putc "if (#{op0} #{comparator} #{op1})"
     $asm.putc "    goto #{operands[2].cLabel};"
 end
 
