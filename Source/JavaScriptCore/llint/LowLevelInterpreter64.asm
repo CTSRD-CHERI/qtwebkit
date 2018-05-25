@@ -44,10 +44,16 @@ macro dispatchIntIndirect(offset)
 end
 
 macro dispatchAfterCall()
-    loadp ArgumentCount + TagOffset[cfr], PC
+    loadis ArgumentCount + TagOffset[cfr], PC
+    printp PC, "dispatchAfterCall"
     loadp CodeBlock[cfr], PB
     loadp CodeBlock::m_instructions[PB], PB
+    printp PB, "dispatchAfterCall instructions"
+    printp PC, "dispatchAfterCall index"
+    printc PC, "dispatchAfterCall index"
     loadisFromInstruction(1, t1)
+    printp t1, "dispatchAfterCall t1"
+    printi t1, "dispatchAfterCall t1"
     storep r0, [cfr, t1, 8]
     valueProfile(r0, (CallOpCodeSize - 1), t3)
     dispatch(CallOpCodeSize)
@@ -357,7 +363,7 @@ end
 macro callCallSlowPath(slowPath, action)
     printp PC, "callCallSlowPath"
     printi PC, "callCallSlowPath"
-    storep PC, ArgumentCount + TagOffset[cfr]
+    storei PC, ArgumentCount + TagOffset[cfr]
     printi ArgumentCount + TagOffset[cfr]
     printp ArgumentCount + TagOffset[cfr]
     prepareStateForCCall()
@@ -396,14 +402,16 @@ end
 
 macro loadVariable(operand, value)
     loadisFromInstruction(operand, value)
-    loadq [cfr, value, 8], value
+    loadp [cfr, value, 8], value
 end
 
 # Index and value must be different registers. Index may be clobbered.
 macro loadConstantOrVariable(index, value)
+    printp index
     bpgteq index, FirstConstantRegisterIndex, .constant
     loadp [cfr, index, 8], value
     printp value, "loadConstantOrVariable"
+    printc value
     jmp .done
 .constant:
     loadp CodeBlock[cfr], value
@@ -417,7 +425,7 @@ end
 
 macro loadConstantOrVariableInt32(index, value, slow)
     loadConstantOrVariable(index, value)
-    bqb value, tagTypeNumber, slow
+    bpb value, tagTypeNumber, slow
 end
 
 macro loadConstantOrVariableCell(index, value, slow)
@@ -434,7 +442,7 @@ macro writeBarrierOnOperand(cellOperand)
     loadConstantOrVariableCell(t1, t2, .writeBarrierDone)
     skipIfIsRememberedOrInEden(t2, t1, t3, 
         macro(cellState)
-            btbnz cellState, .writeBarrierDone
+            btpnz cellState, .writeBarrierDone
             push PB, PC
             move t2, a1 # t2 can be a0 (not on 64 bits, but better safe than sorry)
             move cfr, a0
@@ -462,6 +470,8 @@ macro writeBarrierOnGlobal(valueOperand, loadHelper)
     loadHelper(t3)
     skipIfIsRememberedOrInEden(t3, t1, t2,
         macro(gcData)
+            printb gcData, "gcData"
+            printi gcData, "gcData"
             btbnz gcData, .writeBarrierDone
             push PB, PC
             move cfr, a0
@@ -549,7 +559,7 @@ macro functionArityCheck(doneLabel, slowPath)
     btiz t3, .noExtraSlot
     move ValueUndefined, t0
 .fillExtraSlots:
-    storeq t0, [cfr, t2, 8]
+    storep t0, [cfr, t2, 8]
     addi 1, t2
     bsubinz 1, t3, .fillExtraSlots
     andi ~(StackAlignmentSlots - 1), t1
@@ -657,7 +667,7 @@ _llint_op_create_this:
 _llint_op_to_this:
     traceExecution()
     loadisFromInstruction(1, t0)
-    loadq [cfr, t0, 8], t0
+    loadp [cfr, t0, 8], t0
     btpnz t0, tagMask, .opToThisSlow
     bbneq JSCell::m_type[t0], FinalObjectType, .opToThisSlow
     loadStructureWithScratch(t0, t1, t2)
@@ -710,10 +720,10 @@ _llint_op_not:
     loadisFromInstruction(2, t0)
     loadisFromInstruction(1, t1)
     loadConstantOrVariable(t0, t2)
-    xorq ValueFalse, t2
-    btqnz t2, ~1, .opNotSlow
-    xorq ValueTrue, t2
-    storeq t2, [cfr, t1, 8]
+    xorp ValueFalse, t2
+    btpnz t2, ~1, .opNotSlow
+    xorp ValueTrue, t2
+    storep t2, [cfr, t1, 8]
     dispatch(3)
 
 .opNotSlow:
@@ -729,8 +739,8 @@ macro equalityComparison(integerComparison, slowPath)
     loadConstantOrVariableInt32(t0, t1, .slow)
     loadConstantOrVariableInt32(t2, t0, .slow)
     integerComparison(t0, t1, t0)
-    orq ValueFalse, t0
-    storeq t0, [cfr, t3, 8]
+    orp ValueFalse, t0
+    storep t0, [cfr, t3, 8]
     dispatch(4)
 
 .slow:
@@ -740,7 +750,7 @@ end
 
 _llint_op_eq:
     equalityComparison(
-        macro (left, right, result) cieq left, right, result end,
+        macro (left, right, result) cpeq left, right, result end,
         _slow_path_eq)
 
 
@@ -794,18 +804,23 @@ macro strictEq(equalityOperation, slowPath)
     loadConstantOrVariable(t0, t1)
     loadConstantOrVariable(t2, t0)
     move t0, t2
-    orq t1, t2
+    orp t1, t2
     btpz t2, tagMask, .slow
-    bqaeq t0, tagTypeNumber, .leftOK
-    btqnz t0, tagTypeNumber, .slow
+    bpaeq t0, tagTypeNumber, .leftOK
+    btpnz t0, tagTypeNumber, .slow
 .leftOK:
-    bqaeq t1, tagTypeNumber, .rightOK
-    btqnz t1, tagTypeNumber, .slow
+    bpaeq t1, tagTypeNumber, .rightOK
+    btpnz t1, tagTypeNumber, .slow
 .rightOK:
+    printp t0, "before equality"
+    printp t1, "before equality"
     equalityOperation(t0, t1, t0)
+    printp t0, "after equality"
     loadisFromInstruction(1, t1)
-    orq ValueFalse, t0
-    storeq t0, [cfr, t1, 8]
+    printp t1
+    orp ValueFalse, t0
+    printp t0
+    storep t0, [cfr, t1, 8]
     dispatch(4)
 
 .slow:
@@ -815,7 +830,7 @@ end
 
 _llint_op_stricteq:
     strictEq(
-        macro (left, right, result) cqeq left, right, result end,
+        macro (left, right, result) cpeq left, right, result end,
         _slow_path_stricteq)
 
 
@@ -888,17 +903,20 @@ _llint_op_negate:
     traceExecution()
     loadisFromInstruction(2, t0)
     loadisFromInstruction(1, t1)
+    printp t0
+    printp t1
     loadConstantOrVariable(t0, t2)
-    bqb t2, tagTypeNumber, .opNegateNotInt
-    btiz t2, 0x7fffffff, .opNegateSlow
-    negi t2
-    orq tagTypeNumber, t2
-    storeq t2, [cfr, t1, 8]
+    printp t2
+    bpb t2, tagTypeNumber, .opNegateNotInt
+    btpz t2, 0x7fffffff, .opNegateSlow
+    negp t2
+    orp tagTypeNumber, t2
+    storep t2, [cfr, t1, 8]
     dispatch(3)
 .opNegateNotInt:
-    btqz t2, tagTypeNumber, .opNegateSlow
-    xorq 0x8000000000000000, t2
-    storeq t2, [cfr, t1, 8]
+    btpz t2, tagTypeNumber, .opNegateSlow
+    xorp 0x8000000000000000, t2
+    storep t2, [cfr, t1, 8]
     dispatch(3)
 
 .opNegateSlow:
@@ -1123,8 +1141,8 @@ _llint_op_overrides_has_instance:
     loadisFromInstruction(2, t1)
     loadConstantOrVariable(t1, t0)
     tbz JSCell::m_flags[t0], ImplementsDefaultHasInstance, t1
-    orq ValueFalse, t1
-    storeq t1, [cfr, t3, 8]
+    orp ValueFalse, t1
+    storep t1, [cfr, t3, 8]
     dispatch(4)
 
 .opOverridesHasInstanceNotDefaultSymbol:
@@ -1145,15 +1163,15 @@ _llint_op_instanceof:
     move 1, t0
 .opInstanceofLoop:
     loadStructureAndClobberFirstArg(t2, t3)
-    loadq Structure::m_prototype[t3], t2
-    bqeq t2, t1, .opInstanceofDone
+    loadp Structure::m_prototype[t3], t2
+    bpeq t2, t1, .opInstanceofDone
     btpz t2, tagMask, .opInstanceofLoop
 
     move 0, t0
 .opInstanceofDone:
-    orq ValueFalse, t0
+    orp ValueFalse, t0
     loadisFromInstruction(1, t3)
-    storeq t0, [cfr, t3, 8]
+    storep t0, [cfr, t3, 8]
     dispatch(4)
 
 .opInstanceofSlow:
@@ -1171,14 +1189,14 @@ _llint_op_is_undefined:
     loadisFromInstruction(1, t2)
     loadConstantOrVariable(t1, t0)
     btpz t0, tagMask, .opIsUndefinedCell
-    cqeq t0, ValueUndefined, t3
-    orq ValueFalse, t3
-    storeq t3, [cfr, t2, 8]
+    cpeq t0, ValueUndefined, t3
+    orp ValueFalse, t3
+    storep t3, [cfr, t2, 8]
     dispatch(3)
 .opIsUndefinedCell:
     btbnz JSCell::m_flags[t0], MasqueradesAsUndefined, .masqueradesAsUndefined
     move ValueFalse, t1
-    storeq t1, [cfr, t2, 8]
+    storep t1, [cfr, t2, 8]
     dispatch(3)
 .masqueradesAsUndefined:
     loadStructureWithScratch(t0, t3, t1)
@@ -1207,9 +1225,9 @@ _llint_op_is_number:
     loadisFromInstruction(2, t1)
     loadisFromInstruction(1, t2)
     loadConstantOrVariable(t1, t0)
-    tqnz t0, tagTypeNumber, t1
-    orq ValueFalse, t1
-    storeq t1, [cfr, t2, 8]
+    tpnz t0, tagTypeNumber, t1
+    orp ValueFalse, t1
+    storep t1, [cfr, t2, 8]
     dispatch(3)
 
 
@@ -1219,9 +1237,12 @@ _llint_op_is_string:
     loadisFromInstruction(1, t2)
     loadConstantOrVariable(t1, t0)
     btpnz t0, tagMask, .opIsStringNotCell
+    printp t1
+    printp t2
+    printp t0
     cbeq JSCell::m_type[t0], StringType, t1
-    orq ValueFalse, t1
-    storeq t1, [cfr, t2, 8]
+    orp ValueFalse, t1
+    storep t1, [cfr, t2, 8]
     dispatch(3)
 .opIsStringNotCell:
     storeq ValueFalse, [cfr, t2, 8]
@@ -1235,8 +1256,8 @@ _llint_op_is_object:
     loadConstantOrVariable(t1, t0)
     btpnz t0, tagMask, .opIsObjectNotCell
     cbaeq JSCell::m_type[t0], ObjectType, t1
-    orq ValueFalse, t1
-    storeq t1, [cfr, t2, 8]
+    orp ValueFalse, t1
+    storep t1, [cfr, t2, 8]
     dispatch(3)
 .opIsObjectNotCell:
     storeq ValueFalse, [cfr, t2, 8]
@@ -1248,6 +1269,8 @@ macro loadPropertyAtVariableOffset(propertyOffsetAsInt, objectAndStorage, value,
     bilt propertyOffsetAsInt, firstOutOfLineOffset, .isInline
     loadp JSObject::m_butterfly[objectAndStorage], objectAndStorage
     copyBarrier(objectAndStorage, slow)
+    printp propertyOffsetAsInt
+    printc propertyOffsetAsInt
     negp propertyOffsetAsInt
     printi propertyOffsetAsInt
     #sxi2q propertyOffsetAsInt, propertyOffsetAsInt
@@ -1294,7 +1317,7 @@ _llint_op_get_by_id:
     loadisFromInstruction(1, t2)
     printp t2
     loadPropertyAtVariableOffset(t1, t3, t0, .opGetByIdSlow)
-    storeq t0, [cfr, t2, 8]
+    storep t0, [cfr, t2, 8]
     valueProfile(t0, 8, t1)
     dispatch(9)
 
@@ -1628,8 +1651,9 @@ _llint_op_jmp:
 macro jumpTrueOrFalse(conditionOp, slow)
     loadisFromInstruction(1, t1)
     loadConstantOrVariable(t1, t0)
-    xorq ValueFalse, t0
-    btqnz t0, -1, .slow
+    xorp ValueFalse, t0
+    printp t0, "after xor"
+    btpnz t0, -1, .slow
     conditionOp(t0, .target)
     dispatch(3)
 
@@ -1824,9 +1848,13 @@ macro doCall(slowPath, prepareCall)
     loadConstantOrVariable(t0, t3)
     bpneq t3, t2, .opCallSlow
     loadisFromInstruction(4, t3)
-    lshifti 3, t3
+    printp t3
+    lshiftp 3, t3
     negp t3
-    addp cfr, t3
+    printp t3, "after neg"
+    printp cfr
+    addp cfr, t3, t3 #XXXKG: ensure we derive a capability from cfr
+    printp t3, "after +cfr"
     storep t2, Callee[t3]
     loadisFromInstruction(3, t2)
     storei PC, ArgumentCount + TagOffset[cfr]
@@ -1855,7 +1883,7 @@ _llint_op_to_primitive:
     btpnz t0, tagMask, .opToPrimitiveIsImm
     bbaeq JSCell::m_type[t0], ObjectType, .opToPrimitiveSlowCase
 .opToPrimitiveIsImm:
-    storeq t0, [cfr, t3, 8]
+    storep t0, [cfr, t3, 8]
     dispatch(3)
 
 .opToPrimitiveSlowCase:
@@ -1892,14 +1920,14 @@ _llint_op_catch:
     andp MarkedBlockMask, t3
     loadp MarkedBlock::m_weakSet + WeakSet::m_vm[t3], t3
 
-    loadq VM::m_exception[t3], t0
-    storeq 0, VM::m_exception[t3]
+    loadp VM::m_exception[t3], t0
+    storep 0, VM::m_exception[t3]
     loadisFromInstruction(1, t2)
-    storeq t0, [cfr, t2, 8]
+    storep t0, [cfr, t2, 8]
 
-    loadq Exception::m_value[t0], t3
+    loadp Exception::m_value[t0], t3
     loadisFromInstruction(2, t2)
-    storeq t3, [cfr, t2, 8]
+    storep t3, [cfr, t2, 8]
 
     traceExecution()
     dispatch(3)
@@ -2110,10 +2138,10 @@ end
 
 macro getClosureVar()
     loadisFromInstruction(6, t1)
-    loadq JSEnvironmentRecord_variables[t0, t1, 8], t0
+    loadp JSEnvironmentRecord_variables[t0, t1, 8], t0
     valueProfile(t0, 7, t1)
     loadisFromInstruction(1, t1)
-    storeq t0, [cfr, t1, 8]
+    storep t0, [cfr, t1, 8]
 end
 
 _llint_op_get_from_scope:
@@ -2142,7 +2170,7 @@ _llint_op_get_from_scope:
     bineq t0, GlobalLexicalVar, .gClosureVar
     getGlobalVar(
         macro (value)
-            bqeq value, ValueEmpty, .gDynamic
+            bpeq value, ValueEmpty, .gDynamic
         end)
     dispatch(8)
 
@@ -2198,7 +2226,7 @@ macro putGlobalVariable()
     loadpFromInstruction(5, t2)
     loadpFromInstruction(6, t0)
     notifyWrite(t2, .pDynamic)
-    storeq t1, [t0]
+    storep t1, [t0]
 end
 
 macro putClosureVar()
@@ -2216,7 +2244,10 @@ macro putLocalClosureVar()
     notifyWrite(t3, .pDynamic)
 .noVariableWatchpointSet:
     loadisFromInstruction(6, t1)
-    storeq t2, JSEnvironmentRecord_variables[t0, t1, 8]
+    printp t0, "putLocalClosureVar"
+    printp t1, "putLocalClosureVar"
+    printi JSEnvironmentRecord_variables, "JSEnvironmentRecord_variables"
+    storep t2, JSEnvironmentRecord_variables[t0, t1, 8]
 end
 
 macro checkTDZInGlobalPutToScopeIfNecessary()
