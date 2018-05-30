@@ -178,7 +178,7 @@ end
 const JSEnvironmentRecord_variables = (sizeof JSEnvironmentRecord + SlotSize - 1) & ~(SlotSize - 1)
 const DirectArguments_storage = (sizeof DirectArguments + SlotSize - 1) & ~(SlotSize - 1)
 
-const StackAlignment = 16
+const StackAlignment = 16 #XXXKG: should this be changed to 2*SlotSize? (as implied by StackAlignmnetSlots?)
 const StackAlignmentSlots = 2
 const StackAlignmentMask = StackAlignment - 1
 
