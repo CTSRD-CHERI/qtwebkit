@@ -2139,7 +2139,12 @@ void CodeBlock::finishCreation(VM& vm, ScriptExecutable* ownerExecutable, Unlink
                 instructions[i + 5].u.watchpointSet = op.watchpointSet;
             else if (op.structure)
                 instructions[i + 5].u.structure.set(vm, this, op.structure);
-            instructions[i + 6].u.pointer = reinterpret_cast<void*>(op.operand);
+
+            //XXXKG: casting to a void* breaks getClosureVar() in CHERI
+            if (op.type == ClosureVar)
+                instructions[i + 6].u.operand = op.operand;
+            else
+                instructions[i + 6].u.pointer = reinterpret_cast<void*>(op.operand);
             LOG_CHERI("i: %d, instruction[i+6]: %p, addr: %p, pcBase: %p\n", i, instructions[i + 6].u.pointer, &instructions[i+6], &instructions[0]);
             LOG_CHERI("CodeBlock: %p\n", this);
             break;
