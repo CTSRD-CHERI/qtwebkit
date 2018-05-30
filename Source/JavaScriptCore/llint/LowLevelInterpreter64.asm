@@ -329,7 +329,9 @@ macro callSlowPath(slowPath)
     #printp a0, "before move"
     #printp a1, "before move"
     #printp PC, "before move"
+    printp a0, "before move"
     move cfr, a0
+    printp a0, "before move"
     move PC, a1
     #printp cfr, "after move"
     #printp a0, "after move"
@@ -656,7 +658,7 @@ _llint_op_create_this:
 .hasSeenMultipleCallee:
     allocateJSObject(t1, t2, t0, t3, .opCreateThisSlow)
     loadisFromInstruction(1, t1)
-    storeq t0, [cfr, t1, 8]
+    storep t0, [cfr, t1, 8]
     dispatch(5)
 
 .opCreateThisSlow:
@@ -699,7 +701,9 @@ _llint_op_check_tdz:
     traceExecution()
     loadisFromInstruction(1, t0)
     loadConstantOrVariable(t0, t1)
-    bqneq t1, ValueEmpty, .opNotTDZ
+    printp t1
+    printq t1
+    bpneq t1, ValueEmpty, .opNotTDZ
     callSlowPath(_slow_path_throw_tdz_error)
 
 .opNotTDZ:
@@ -843,11 +847,11 @@ _llint_op_nstricteq:
 macro preOp(arithmeticOperation, slowPath)
     traceExecution()
     loadisFromInstruction(1, t0)
-    loadq [cfr, t0, 8], t1
+    loadp [cfr, t0, 8], t1
     bqb t1, tagTypeNumber, .slow
     arithmeticOperation(t1, .slow)
-    orq tagTypeNumber, t1
-    storeq t1, [cfr, t0, 8]
+    orp tagTypeNumber, t1
+    storep t1, [cfr, t0, 8]
     dispatch(2)
 
 .slow:
@@ -1057,8 +1061,8 @@ macro bitOp(operation, slowPath, advance)
     bqb t0, tagTypeNumber, .slow
     bqb t1, tagTypeNumber, .slow
     operation(t1, t0)
-    orq tagTypeNumber, t0
-    storeq t0, [cfr, t3, 8]
+    orp tagTypeNumber, t0
+    storep t0, [cfr, t3, 8]
     dispatch(advance)
 
 .slow:
@@ -1096,7 +1100,7 @@ _llint_op_unsigned:
     loadisFromInstruction(2, t1)
     loadConstantOrVariable(t1, t2)
     bilt t2, 0, .opUnsignedSlow
-    storeq t2, [cfr, t0, 8]
+    storep t2, [cfr, t0, 8]
     dispatch(3)
 .opUnsignedSlow:
     callSlowPath(_slow_path_unsigned)
@@ -1340,9 +1344,9 @@ _llint_op_get_array_length:
     copyBarrier(t0, .opGetArrayLengthSlow)
     loadi -sizeof IndexingHeader + IndexingHeader::u.lengths.publicLength[t0], t0
     bilt t0, 0, .opGetArrayLengthSlow
-    orq tagTypeNumber, t0
+    orp tagTypeNumber, t0
     valueProfile(t0, 8, t2)
-    storeq t0, [cfr, t1, 8]
+    storep t0, [cfr, t1, 8]
     dispatch(9)
 
 .opGetArrayLengthSlow:
@@ -1651,6 +1655,7 @@ _llint_op_jmp:
 macro jumpTrueOrFalse(conditionOp, slow)
     loadisFromInstruction(1, t1)
     loadConstantOrVariable(t1, t0)
+    printp t0, "before xor"
     xorp ValueFalse, t0
     printp t0, "after xor"
     btpnz t0, -1, .slow
@@ -1669,7 +1674,7 @@ end
 macro equalNull(cellHandler, immediateHandler)
     loadisFromInstruction(1, t0)
     assertNotConstant(t0)
-    loadq [cfr, t0, 8], t0
+    loadp [cfr, t0, 8], t0
     btpnz t0, tagMask, .immediate
     loadStructureWithScratch(t0, t2, t1)
     cellHandler(t2, JSCell::m_flags[t0], .target)
@@ -2031,6 +2036,8 @@ macro resolveScope()
     loadisFromInstruction(5, t2)
     loadisFromInstruction(2, t0)
     loadp [cfr, t0, 8], t0
+    printp t2
+    printi t2
     btiz t2, .resolveScopeLoopEnd
 
 .resolveScopeLoop:
@@ -2040,7 +2047,9 @@ macro resolveScope()
 
 .resolveScopeLoopEnd:
     loadisFromInstruction(1, t1)
-    storeq t0, [cfr, t1, 8]
+    printi t1
+    printp t1
+    storep t0, [cfr, t1, 8]
 end
 
 
@@ -2137,9 +2146,13 @@ macro getGlobalVar(tdzCheckIfNecessary)
 end
 
 macro getClosureVar()
-    loadisFromInstruction(6, t1)
+    loadisFromInstruction(6, t1) #XXXKG: this value is stored as a pointer in CodeBlock::finishCreation
+    printi t1
+    printp t1
     loadp JSEnvironmentRecord_variables[t0, t1, 8], t0
     valueProfile(t0, 7, t1)
+    printi t0
+    printp t0
     loadisFromInstruction(1, t1)
     storep t0, [cfr, t1, 8]
 end
@@ -2233,6 +2246,8 @@ macro putClosureVar()
     loadisFromInstruction(3, t1)
     loadConstantOrVariable(t1, t2)
     loadisFromInstruction(6, t1)
+    printi t1, "putClosureVar"
+    printp t1, "putClosureVar"
     storeq t2, JSEnvironmentRecord_variables[t0, t1, 8]
 end
 
@@ -2240,6 +2255,7 @@ macro putLocalClosureVar()
     loadisFromInstruction(3, t1)
     loadConstantOrVariable(t1, t2)
     loadpFromInstruction(5, t3)
+    printp t3
     btpz t3, .noVariableWatchpointSet
     notifyWrite(t3, .pDynamic)
 .noVariableWatchpointSet:
@@ -2344,11 +2360,11 @@ _llint_op_put_to_scope:
 _llint_op_get_from_arguments:
     traceExecution()
     loadVariable(2, t0)
-    loadi 24[PB, PC, 8], t1
-    loadq DirectArguments_storage[t0, t1, 8], t0
+    loadi 3*PtrSize[PB, PC, 8], t1
+    loadp DirectArguments_storage[t0, t1, 8], t0
     valueProfile(t0, 4, t1)
     loadisFromInstruction(1, t1)
-    storeq t0, [cfr, t1, 8]
+    storep t0, [cfr, t1, 8]
     dispatch(5)
 
 
@@ -2359,7 +2375,7 @@ _llint_op_put_to_arguments:
     loadi 2*PtrSize[PB, PC, 8], t1
     loadisFromInstruction(3, t3)
     loadConstantOrVariable(t3, t2)
-    storeq t2, DirectArguments_storage[t0, t1, 8]
+    storep t2, DirectArguments_storage[t0, t1, 8]
     dispatch(4)
 
 
