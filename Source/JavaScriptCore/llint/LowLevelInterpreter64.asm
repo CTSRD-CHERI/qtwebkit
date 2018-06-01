@@ -560,38 +560,38 @@ macro functionArityCheck(doneLabel, slowPath)
     loadi CommonSlowPaths::ArityCheckData::paddedStackSpace[r1], t1
     btiz t1, .continue
     loadi PayloadOffset + ArgumentCount[cfr], t2
-    addi CallFrameHeaderSlots, t2
+    addp CallFrameHeaderSlots, t2
 
     // Check if there are some unaligned slots we can use
     move t1, t3
-    andi StackAlignmentSlots - 1, t3
+    andp StackAlignmentSlots - 1, t3
     btiz t3, .noExtraSlot
     move ValueUndefined, t0
 .fillExtraSlots:
     storep t0, [cfr, t2, 8]
-    addi 1, t2
+    addp 1, t2
     bsubinz 1, t3, .fillExtraSlots
-    andi ~(StackAlignmentSlots - 1), t1
+    andp ~(StackAlignmentSlots - 1), t1
     btiz t1, .continue
 
 .noExtraSlot:
     // Move frame up t1 slots
-    negq t1
+    negp t1
     move cfr, t3
-    subp CalleeSaveSpaceAsVirtualRegisters * 8, t3
-    addi CalleeSaveSpaceAsVirtualRegisters, t2
+    subp CalleeSaveSpaceAsVirtualRegisters * PtrSize, t3
+    addp CalleeSaveSpaceAsVirtualRegisters, t2
 .copyLoop:
-    loadq [t3], t0
-    storeq t0, [t3, t1, 8]
-    addp 8, t3
+    loadp [t3], t0
+    storep t0, [t3, t1, 8]
+    addp PtrSize, t3
     bsubinz 1, t2, .copyLoop
 
     // Fill new slots with JSUndefined
     move t1, t2
     move ValueUndefined, t0
 .fillLoop:
-    storeq t0, [t3, t1, 8]
-    addp 8, t3
+    storep t0, [t3, t1, 8]
+    addp PtrSize, t3
     baddinz 1, t2, .fillLoop
 
     lshiftp 3, t1
