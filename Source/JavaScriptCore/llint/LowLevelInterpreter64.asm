@@ -317,10 +317,16 @@ macro restoreStateAfterCCall()
     move 0, PC # reset PC to the null capability because sub below only changes the offset
     printc PC, "after null"
     printc PB
+    #XXXKG: PC may become negative if an exception is thrown, possibly leading to a CHERI length violation. We reset PB to r0 instead (keeping PC as 0).
+    bplt r0, PB, .exception
     subc r0, PB, PC
     printc PC, "after sub"
     rshiftp 3, PC
     printp PC, "after rshift"
+    jmp .done
+.exception:
+    move r0, PB
+.done:
 end
 
 macro callSlowPath(slowPath)
@@ -420,6 +426,7 @@ macro loadConstantOrVariable(index, value)
     loadp CodeBlock::m_constantRegisters + VectorBufferOffset[value], value
     subp FirstConstantRegisterIndex, index
     printp index
+    printp value, "VectorBuffer"
     loadp [value, index, 8], value
     printp value
 .done:
@@ -1506,10 +1513,16 @@ _llint_op_get_by_val:
     arrayProfile(t2, t3, t1)
     loadisFromInstruction(3, t3)
     loadConstantOrVariableInt32(t3, t1, .opGetByValSlow)
-    sxi2q t1, t1
+    printp t1
+    printq t1
+    #sxi2q t1, t1
     loadp JSObject::m_butterfly[t0], t3
     copyBarrier(t3, .opGetByValSlow)
+    printp t2, "before and"
+    printi t2, "before and"
     andi IndexingShapeMask, t2
+    printp t2, "after and"
+    printi t2, "after and"
     bieq t2, Int32Shape, .opGetByValIsContiguous
     bineq t2, ContiguousShape, .opGetByValNotContiguous
 .opGetByValIsContiguous:
@@ -1531,7 +1544,11 @@ _llint_op_get_by_val:
     jmp .opGetByValDone
     
 .opGetByValNotDouble:
+    printi t2, "before sub"
+    printp t2, "before sub"
     subi ArrayStorageShape, t2
+    printi t2, "after sub"
+    printp t2, "after sub"
     bia t2, SlowPutArrayStorageShape - ArrayStorageShape, .opGetByValSlow
     biaeq t1, -sizeof IndexingHeader + IndexingHeader::u.lengths.vectorLength[t3], .opGetByValOutOfBounds
     loadisFromInstruction(1, t0)
