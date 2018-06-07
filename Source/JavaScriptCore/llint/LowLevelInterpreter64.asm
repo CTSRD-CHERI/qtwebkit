@@ -2265,7 +2265,7 @@ macro putClosureVar()
     loadisFromInstruction(6, t1)
     printi t1, "putClosureVar"
     printp t1, "putClosureVar"
-    storeq t2, JSEnvironmentRecord_variables[t0, t1, 8]
+    storep t2, JSEnvironmentRecord_variables[t0, t1, 8]
 end
 
 macro putLocalClosureVar()
