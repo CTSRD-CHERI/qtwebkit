@@ -773,7 +773,7 @@ _llint_op_neq:
 
 macro equalNullComparison()
     loadisFromInstruction(2, t0)
-    loadq [cfr, t0, 8], t0
+    loadp [cfr, t0, 8], t0
     btpnz t0, tagMask, .immediate
     btbnz JSCell::m_flags[t0], MasqueradesAsUndefined, .masqueradesAsUndefined
     move 0, t0
@@ -785,8 +785,8 @@ macro equalNullComparison()
     cpeq Structure::m_globalObject[t2], t0, t0
     jmp .done
 .immediate:
-    andq ~TagBitUndefined, t0
-    cqeq t0, ValueNull, t0
+    andp ~TagBitUndefined, t0
+    cpeq t0, ValueNull, t0
 .done:
 end
 
@@ -794,8 +794,8 @@ _llint_op_eq_null:
     traceExecution()
     equalNullComparison()
     loadisFromInstruction(1, t1)
-    orq ValueFalse, t0
-    storeq t0, [cfr, t1, 8]
+    orp ValueFalse, t0
+    storep t0, [cfr, t1, 8]
     dispatch(3)
 
 
@@ -803,8 +803,8 @@ _llint_op_neq_null:
     traceExecution()
     equalNullComparison()
     loadisFromInstruction(1, t1)
-    xorq ValueTrue, t0
-    storeq t0, [cfr, t1, 8]
+    xorp ValueTrue, t0
+    storep t0, [cfr, t1, 8]
     dispatch(3)
 
 
