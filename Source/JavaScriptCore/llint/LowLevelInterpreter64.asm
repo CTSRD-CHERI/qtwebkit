@@ -883,10 +883,10 @@ _llint_op_to_number:
     loadisFromInstruction(2, t0)
     loadisFromInstruction(1, t1)
     loadConstantOrVariable(t0, t2)
-    bqaeq t2, tagTypeNumber, .opToNumberIsImmediate
-    btqz t2, tagTypeNumber, .opToNumberSlow
+    bpaeq t2, tagTypeNumber, .opToNumberIsImmediate
+    btpz t2, tagTypeNumber, .opToNumberSlow
 .opToNumberIsImmediate:
-    storeq t2, [cfr, t1, 8]
+    storep t2, [cfr, t1, 8]
     dispatch(3)
 
 .opToNumberSlow:
