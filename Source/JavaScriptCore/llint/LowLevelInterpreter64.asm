@@ -941,9 +941,9 @@ macro binaryOpCustomStore(integerOperationAndStore, doubleOperation, slowPath)
     loadConstantOrVariable(t0, t1)
     loadConstantOrVariable(t2, t0)
     printp t0, "first op"
-    bqb t0, tagTypeNumber, .op1NotInt
+    bpb t0, tagTypeNumber, .op1NotInt
     printp t1, "second op"
-    bqb t1, tagTypeNumber, .op2NotInt
+    bpb t1, tagTypeNumber, .op2NotInt
     loadisFromInstruction(1, t2)
     integerOperationAndStore(t1, t0, .slow, t2)
     dispatch(5)
