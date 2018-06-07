@@ -433,7 +433,7 @@ def cloopEmitPrint(operands, type)
     when :int8;  "%c"
     when :int32; "%d"
     when :int64; "%ld"
-    when :cap; "0x%lx"
+    when :cap; "%#p"
     else
         raise "Unexpected Address type: #{type}"
     end
@@ -444,13 +444,9 @@ def cloopEmitPrint(operands, type)
     end
 
     if type == :cap
-        if contextString != ""
-            contextString += " "
-        end
-        $asm.putc "LOG_CHERI(\"#{contextString}#{operands[0].clValue(:int)}: %p, #{operands[0].clDump}.base: #{formatSpecifier}, #{operands[0].clDump}.offset: #{formatSpecifier}, #{operands[0].clDump}.length: %ld\\n\", #{operands[0].clValue(:int)}, __builtin_cheri_base_get(#{operands[0].clValue(:int8Ptr)}), __builtin_cheri_offset_get(#{operands[0].clValue(:int8Ptr)}), __builtin_cheri_length_get(#{operands[0].clValue(:int8Ptr)}));"
-    else
-        $asm.putc "LOG_CHERI(\"#{operands[0].clValue(type)}#{contextString}: #{formatSpecifier}\\n\", #{operands[0].clValue(type)});"
+        type = :int8Ptr
     end
+    $asm.putc "LOG_CHERI(\"#{operands[0].clValue(type)}#{contextString}: #{formatSpecifier}\\n\", #{operands[0].clValue(type)});"
 end
 
 def cloopEmitCompareDoubleWithNaNCheckAndBranch(operands, condition)
