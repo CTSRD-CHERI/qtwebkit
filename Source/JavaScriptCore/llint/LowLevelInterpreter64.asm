@@ -902,7 +902,7 @@ _llint_op_to_string:
     btpnz t0, tagMask, .opToStringSlow
     bbneq JSCell::m_type[t0], StringType, .opToStringSlow
 .opToStringIsString:
-    storeq t0, [cfr, t2, 8]
+    storep t0, [cfr, t2, 8]
     dispatch(3)
 
 .opToStringSlow:
