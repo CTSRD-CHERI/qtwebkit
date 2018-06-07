@@ -1750,8 +1750,8 @@ macro compare(integerCompare, doubleCompare, slowPath)
     loadisFromInstruction(2, t3)
     loadConstantOrVariable(t2, t0)
     loadConstantOrVariable(t3, t1)
-    bqb t0, tagTypeNumber, .op1NotInt
-    bqb t1, tagTypeNumber, .op2NotInt
+    bpb t0, tagTypeNumber, .op1NotInt
+    bpb t1, tagTypeNumber, .op2NotInt
     integerCompare(t0, t1, .jumpTarget)
     dispatch(4)
 
@@ -2144,7 +2144,7 @@ end
 macro getProperty(slow)
     printp PC, "before loading property offset"
     printp PB, "before loading property offset"
-    loadpFromInstruction(6, t1)
+    loadisFromInstruction(6, t1)
     loadPropertyAtVariableOffset(t1, t0, t2, slow)
     printp t2, "property value"
     valueProfile(t2, 7, t0)
