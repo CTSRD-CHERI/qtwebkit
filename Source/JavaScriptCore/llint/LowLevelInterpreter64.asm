@@ -331,18 +331,12 @@ end
 
 macro callSlowPath(slowPath)
     prepareStateForCCall()
-    #printp cfr, "before move"
-    #printp a0, "before move"
-    #printp a1, "before move"
-    #printp PC, "before move"
     printp a0, "before move"
+    printp a1, "before move"
     move cfr, a0
-    printp a0, "before move"
     move PC, a1
-    #printp cfr, "after move"
-    #printp a0, "after move"
-    #printp a1, "after move"
-    #printp PC, "after move"
+    printp a0, "after move"
+    printp a1, "after move"
     cCall2(slowPath)
     restoreStateAfterCCall()
 end
@@ -418,7 +412,7 @@ macro loadConstantOrVariable(index, value)
     printp index
     bpgteq index, FirstConstantRegisterIndex, .constant
     loadp [cfr, index, 8], value
-    printp value, "loadConstantOrVariable"
+    printp value, "variable"
     printc value
     jmp .done
 .constant:
@@ -428,7 +422,7 @@ macro loadConstantOrVariable(index, value)
     printp index
     printp value, "VectorBuffer"
     loadp [value, index, 8], value
-    printp value
+    printp value, "constant"
 .done:
 end
 
@@ -439,10 +433,10 @@ end
 
 macro loadConstantOrVariableCell(index, value, slow)
     loadConstantOrVariable(index, value)
-    printp value, "loadConstantOrVariableCell"
+    #printp value, "loadConstantOrVariableCell"
     printp tagMask
-    printc value
-    printc tagMask
+    #printc value
+    #printc tagMask
     btpnz value, tagMask, slow
 end
 
@@ -1141,7 +1135,7 @@ _llint_op_bitor:
 _llint_op_overrides_has_instance:
     traceExecution()
     loadisFromInstruction(1, t3)
-
+    printi t3
     loadisFromInstruction(3, t1)
     loadConstantOrVariable(t1, t0)
     loadp CodeBlock[cfr], t2
@@ -1298,6 +1292,8 @@ end
 
 
 macro storePropertyAtVariableOffset(propertyOffsetAsInt, objectAndStorage, value, slow)
+    printp propertyOffsetAsInt
+    printi propertyOffsetAsInt
     bilt propertyOffsetAsInt, firstOutOfLineOffset, .isInline
     loadp JSObject::m_butterfly[objectAndStorage], objectAndStorage
     copyBarrier(objectAndStorage, slow)
@@ -1376,7 +1372,7 @@ _llint_op_put_by_id:
     loadisFromInstruction(3, t1)
     loadConstantOrVariable(t1, t3)
 
-    loadpFromInstruction(8, t1)
+    loadpFromInstruction(8, t1) # XXXKG: shouldn't this be loadisFromInstruction because PutByIdFlags is an int?
 
     # At this point, we have:
     # t0 -> object base
@@ -1384,10 +1380,13 @@ _llint_op_put_by_id:
     # t2 -> current structure ID
     # t3 -> value to put
 
+    printp t1, "flags"
+    printi t1, "flags"
     btpnz t1, PutByIdPrimaryTypeMask, .opPutByIdTypeCheckObjectWithStructureOrOther
 
     # We have one of the non-structure type checks. Find out which one.
     andp PutByIdSecondaryTypeMask, t1
+    printp t1, "post-and"
     bplt t1, PutByIdSecondaryTypeString, .opPutByIdTypeCheckLessThanString
 
     # We are one of the following: String, Symbol, Object, ObjectOrOther, Top
@@ -2255,6 +2254,9 @@ macro putGlobalVariable()
     loadConstantOrVariable(t0, t1)
     loadpFromInstruction(5, t2)
     loadpFromInstruction(6, t0)
+    printp t2
+    printi t2
+    printb t2
     notifyWrite(t2, .pDynamic)
     storep t1, [t0]
 end
@@ -2298,6 +2300,8 @@ end
 _llint_op_put_to_scope:
     traceExecution()
     loadisFromInstruction(4, t0)
+    printp t0
+    printi t0
     andi ResolveTypeMask, t0
 
 #pLocalClosureVar:
