@@ -1059,8 +1059,8 @@ macro bitOp(operation, slowPath, advance)
     loadisFromInstruction(1, t3)
     loadConstantOrVariable(t0, t1)
     loadConstantOrVariable(t2, t0)
-    bqb t0, tagTypeNumber, .slow
-    bqb t1, tagTypeNumber, .slow
+    bpb t0, tagTypeNumber, .slow
+    bpb t1, tagTypeNumber, .slow
     operation(t1, t0)
     orp tagTypeNumber, t0
     storep t0, [cfr, t3, 8]
