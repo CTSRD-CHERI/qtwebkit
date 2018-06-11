@@ -54,9 +54,22 @@ template <typename T> struct ContiguousData {
         UNUSED_PARAM(length);
     }
 
-    const T& operator[](size_t index) const { ASSERT(index < m_length); return m_data[index]; }
-    T& operator[](size_t index) { ASSERT(index < m_length); return m_data[index]; }
-
+    const T& operator[](size_t index) const {
+        ASSERT(index < m_length);
+#ifdef __CHERI_PURE_CAPABILITY__
+        return (T&)*(m_data + index*(_MIPS_SZCAP/8));
+#else
+        return m_data[index];
+#endif
+    }
+    T& operator[](size_t index) {
+        ASSERT(index < m_length);
+#ifdef __CHERI_PURE_CAPABILITY__
+        return (T&)*(m_data + index*(_MIPS_SZCAP/8));
+#else
+        return m_data[index];
+#endif
+    }
     T* data() const { return m_data; }
 #if !ASSERT_DISABLED
     size_t length() const { return m_length; }
