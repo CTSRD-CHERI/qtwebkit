@@ -2405,7 +2405,7 @@ _llint_op_get_parent_scope:
     loadVariable(2, t0)
     loadp JSScope::m_next[t0], t0
     loadisFromInstruction(1, t1)
-    storeq t0, [cfr, t1, 8]
+    storep t0, [cfr, t1, 8]
     dispatch(3)
 
 
