@@ -841,7 +841,7 @@ _llint_op_stricteq:
 
 _llint_op_nstricteq:
     strictEq(
-        macro (left, right, result) cqneq left, right, result end,
+        macro (left, right, result) cpneq left, right, result end,
         _slow_path_nstricteq)
 
 
