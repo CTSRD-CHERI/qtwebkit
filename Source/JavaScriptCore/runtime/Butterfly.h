@@ -57,7 +57,10 @@ template <typename T> struct ContiguousData {
     const T& operator[](size_t index) const {
         ASSERT(index < m_length);
 #ifdef __CHERI_PURE_CAPABILITY__
-        return (T&)*(m_data + index*(_MIPS_SZCAP/8));
+        //XXXKG: each element needs to be capability-sized so that the
+        //       conversion to contiguous (e.g. see
+        //       JSObject::convertDoubleToContiguous) works
+        return (T&)*((int8_t*)m_data + index*(_MIPS_SZCAP/8));
 #else
         return m_data[index];
 #endif
@@ -65,7 +68,10 @@ template <typename T> struct ContiguousData {
     T& operator[](size_t index) {
         ASSERT(index < m_length);
 #ifdef __CHERI_PURE_CAPABILITY__
-        return (T&)*(m_data + index*(_MIPS_SZCAP/8));
+        //XXXKG: each element needs to be capability-sized so that the
+        //       conversion to contiguous (e.g. see
+        //       JSObject::convertDoubleToContiguous) works
+        return (T&)*((int8_t*)m_data + index*(_MIPS_SZCAP/8));
 #else
         return m_data[index];
 #endif
