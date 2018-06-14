@@ -1266,7 +1266,7 @@ _llint_op_is_object:
     storep t1, [cfr, t2, 8]
     dispatch(3)
 .opIsObjectNotCell:
-    storeq ValueFalse, [cfr, t2, 8]
+    storep ValueFalse, [cfr, t2, 8]
     dispatch(3)
 
 
@@ -2468,7 +2468,7 @@ _llint_op_get_rest_length:
 .storeZero:
     move 0, t0
 .boxUp:
-    orq tagTypeNumber, t0
+    orp tagTypeNumber, t0
     loadisFromInstruction(1, t1)
-    storeq t0, [cfr, t1, 8]
+    storep t0, [cfr, t1, 8]
     dispatch(3)
