@@ -914,8 +914,9 @@ _llint_op_negate:
     printp t2
     bpb t2, tagTypeNumber, .opNegateNotInt
     btpz t2, 0x7fffffff, .opNegateSlow
-    negp t2
+    negi t2
     orp tagTypeNumber, t2
+    printp t2
     storep t2, [cfr, t1, 8]
     dispatch(3)
 .opNegateNotInt:
@@ -1593,7 +1594,7 @@ macro putByVal(slowPath)
     arrayProfile(t2, t3, t0)
     loadisFromInstruction(2, t0)
     loadConstantOrVariableInt32(t0, t3, .opPutByValSlow)
-    sxi2q t3, t3
+    #sxi2q t3, t3
     loadp JSObject::m_butterfly[t1], t0
     copyBarrier(t0, .opPutByValSlow)
     andi IndexingShapeMask, t2
