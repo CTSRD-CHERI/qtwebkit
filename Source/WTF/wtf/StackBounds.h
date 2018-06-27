@@ -122,8 +122,13 @@ private:
         void* currentPosition = &currentPosition;
         ASSERT(m_origin != m_bound);
         ASSERT(isGrowingDownward()
+#ifdef __CHERI_PURE_CAPABILITY__ // XXXKG: use vaddr_t because m_bound may not have tag set (if obtained from pthreads)
+            ? ((vaddr_t)currentPosition < (vaddr_t)m_origin && (vaddr_t)currentPosition > (vaddr_t)m_bound)
+            : ((vaddr_t)currentPosition > (vaddr_t)m_origin && (vaddr_t)currentPosition < (vaddr_t)m_bound));
+#else
             ? (currentPosition < m_origin && currentPosition > m_bound)
             : (currentPosition > m_origin && currentPosition < m_bound));
+#endif
 #endif
     }
 

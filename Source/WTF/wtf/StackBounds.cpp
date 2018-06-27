@@ -110,9 +110,19 @@ void StackBounds::initialize()
     int rc = pthread_attr_getstack(&sattr, &stackBase, &stackSize);
     (void)rc; // FIXME: Deal with error code somehow? Seems fatal.
     ASSERT(stackBase);
+#ifdef __CHERI_PURE_CAPABILITY__
+    ASSERT((vaddr_t)stackBase < (vaddr_t)__builtin_cheri_base_get(__builtin_cheri_stack_get()));
+#endif
     pthread_attr_destroy(&sattr);
     m_bound = stackBase;
+#ifdef __CHERI_PURE_CAPABILITY__
+    //XXXKG: set m_origin to the end of the stack capability
+    m_origin = __builtin_cheri_offset_set(
+                   __builtin_cheri_stack_get(),
+                   __builtin_cheri_length_get(__builtin_cheri_stack_get()));
+#else
     m_origin = static_cast<char*>(stackBase) + stackSize;
+#endif
 }
 
 #elif OS(WINDOWS)
