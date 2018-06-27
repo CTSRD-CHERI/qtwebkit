@@ -193,7 +193,11 @@ namespace JSC {
 
         size_t m_atomsPerCell;
         size_t m_endAtom; // This is a fuzzy end. Always test for < m_endAtom.
+#ifdef __CHERI_PURE_CAPABILITY__ //XXXKG: use non-atomic bitmap on CHERI
+        WTF::Bitmap<atomsPerBlock, WTF::BitmapNotAtomic, uint8_t> m_marks;
+#else
         WTF::Bitmap<atomsPerBlock, WTF::BitmapAtomic, uint8_t> m_marks;
+#endif
         std::unique_ptr<WTF::Bitmap<atomsPerBlock>> m_newlyAllocated;
 
         size_t m_capacity;
@@ -319,7 +323,11 @@ namespace JSC {
 
     inline size_t MarkedBlock::atomNumber(const void* p)
     {
+#ifdef __CHERI_PURE_CAPABILITY__
+        return ((vaddr_t)p - (vaddr_t)this) / atomSize;
+#else
         return (reinterpret_cast<Bits>(p) - reinterpret_cast<Bits>(this)) / atomSize;
+#endif
     }
 
     inline bool MarkedBlock::isMarked(const void* p)
