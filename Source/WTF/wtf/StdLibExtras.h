@@ -118,7 +118,11 @@ static const size_t MB = 1024 * 1024;
 
 inline bool isPointerAligned(void* p)
 {
+#ifdef __CHERI_PURE_CAPABILITY__
+    return __builtin_is_aligned(p, _MIPS_SZCAP/8);
+#else
     return !((vaddr_t)(p) & (sizeof(char*) - 1));
+#endif
 }
 
 inline bool is8ByteAligned(void* p)
