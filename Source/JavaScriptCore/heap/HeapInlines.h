@@ -330,7 +330,11 @@ inline bool Heap::isPointerGCObject(TinyBloomFilter filter, MarkedBlockSet& mark
 {
     MarkedBlock* candidate = MarkedBlock::blockFor(pointer);
     if (filter.ruleOut(bitwise_cast<Bits>(candidate))) {
+#ifdef __CHERI_PURE_CAPABILITY__
+        ASSERT(!(vaddr_t)candidate || !markedBlockSet.set().contains(candidate));
+#else
         ASSERT(!candidate || !markedBlockSet.set().contains(candidate));
+#endif
         return false;
     }
 
