@@ -153,8 +153,8 @@ public:
 
     static JSValue toThis(JSCell*, ExecState*, ECMAMode);
 
-    void zap() { *reinterpret_cast<uintptr_t**>(this) = 0; }
-    bool isZapped() const { return !*reinterpret_cast<uintptr_t* const*>(this); }
+    void zap() { *reinterpret_cast<uint64_t*>(this) = 0; }
+    bool isZapped() const { return !*reinterpret_cast<const uint64_t*>(this); }
 
     static bool canUseFastGetOwnProperty(const Structure&);
     JSValue fastGetOwnProperty(VM&, Structure&, PropertyName);
