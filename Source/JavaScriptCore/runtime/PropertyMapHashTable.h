@@ -92,12 +92,12 @@ class PropertyTable final : public JSCell {
 
         bool operator==(const ordered_iterator<T>& other)
         {
-            return m_valuePtr == other.m_valuePtr;
+            return (vaddr_t)m_valuePtr == (vaddr_t)other.m_valuePtr;
         }
 
         bool operator!=(const ordered_iterator<T>& other)
         {
-            return m_valuePtr != other.m_valuePtr;
+            return (vaddr_t)m_valuePtr != (vaddr_t)other.m_valuePtr;
         }
 
         T& operator*()
@@ -528,13 +528,21 @@ inline T* PropertyTable::skipDeletedEntries(T* valuePtr)
 inline PropertyTable::ValueType* PropertyTable::table()
 {
     // The table of values lies after the hash index.
+#ifdef __CHERI_PURE_CAPABILITY__
+    return reinterpret_cast<ValueType*>(__builtin_align_up(m_index + m_indexSize, _MIPS_SZCAP/8));
+#else
     return reinterpret_cast<ValueType*>(m_index + m_indexSize);
+#endif
 }
 
 inline const PropertyTable::ValueType* PropertyTable::table() const
 {
     // The table of values lies after the hash index.
+#ifdef __CHERI_PURE_CAPABILITY__
+    return reinterpret_cast<const ValueType*>(__builtin_align_up(m_index + m_indexSize, _MIPS_SZCAP/8));
+#else
     return reinterpret_cast<const ValueType*>(m_index + m_indexSize);
+#endif
 }
 
 inline unsigned PropertyTable::usedCount() const
@@ -546,7 +554,12 @@ inline unsigned PropertyTable::usedCount() const
 inline size_t PropertyTable::dataSize()
 {
     // The size in bytes of data needed for by the table.
+#ifdef __CHERI_PURE_CAPABILITY__
+    //XXXKG: ensure table starts on a capability alignment boundary
+    return __builtin_align_up(m_indexSize * sizeof(unsigned), _MIPS_SZCAP/8) + ((tableCapacity()) + 1) * sizeof(ValueType);
+#else
     return m_indexSize * sizeof(unsigned) + ((tableCapacity()) + 1) * sizeof(ValueType);
+#endif
 }
 
 inline unsigned PropertyTable::sizeForCapacity(unsigned capacity)
