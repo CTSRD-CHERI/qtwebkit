@@ -1052,7 +1052,13 @@ NEVER_INLINE void Heap::collect(HeapOperation collectionType)
     void* stackTop;
     ALLOCATE_AND_GET_REGISTER_STATE(registers);
 
-    collectImpl(collectionType, wtfThreadData().stack().origin(), &stackTop, registers);
+    collectImpl(collectionType, wtfThreadData().stack().origin(),
+#ifdef __CHERI_PURE_CAPABILITY__
+    __builtin_cheri_stack_get()
+#else
+    &stackTop
+#endif
+    , registers);
 
     sanitizeStackForVM(m_vm);
 }
