@@ -41,9 +41,13 @@ public:
     }
 
     CopyWorklistItem(JSCell* cell, CopyToken token)
-        : m_value(bitwise_cast<uintptr_t>(cell) | static_cast<uintptr_t>(token))
+        : m_value(qSetLowPointerBits(quintptr(cell), token))
     {
+#ifdef __CHERI_PURE_CAPABILITY__
+        ASSERT(!((vaddr_t)cell & mask));
+#else
         ASSERT(!(bitwise_cast<uintptr_t>(cell) & static_cast<uintptr_t>(mask)));
+#endif
         ASSERT(static_cast<uintptr_t>(token) <= mask);
     }
     
