@@ -476,7 +476,9 @@ LLINT_SLOW_PATH_DECL(stack_check)
     // Hence, if we get here, then we know a stack overflow is imminent. So, just
     // throw the StackOverflowError unconditionally.
 #if !ENABLE(JIT)
+#ifndef __CHERI_PURE_CAPABILITY__
     ASSERT(!vm.interpreter->stack().containsAddress(exec->topOfFrame()));
+#endif
     if (LIKELY(vm.interpreter->stack().ensureCapacityFor(exec->topOfFrame())))
         LLINT_RETURN_TWO(pc, 0);
 #endif
