@@ -108,7 +108,11 @@ void Data::performAssertions(VM& vm)
 
 #if CPU(BIG_ENDIAN)
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.tag) == 0);
+#ifdef __CHERI_PURE_CAPABILITY__
+    ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.payload) == ((_MIPS_SZCAP/8)-4));
+#else
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.payload) == 4);
+#endif
 #else
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.tag) == 4);
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.payload) == 0);
