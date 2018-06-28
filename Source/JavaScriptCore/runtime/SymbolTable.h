@@ -409,7 +409,7 @@ private:
     
     static bool isValidVarOffset(VarOffset offset)
     {
-        return (qvaddr(static_cast<qvaddr>(offset.rawOffset()) << FlagBits) >> FlagBits) == static_cast<intptr_t>(offset.rawOffset());
+        return (qvaddr(static_cast<qvaddr>(offset.rawOffset()) << FlagBits) >> FlagBits) == static_cast<qvaddr>(offset.rawOffset());
     }
 
     intptr_t m_bits;
