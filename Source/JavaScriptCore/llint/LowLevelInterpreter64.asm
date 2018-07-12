@@ -1219,10 +1219,10 @@ _llint_op_is_boolean:
     loadisFromInstruction(2, t1)
     loadisFromInstruction(1, t2)
     loadConstantOrVariable(t1, t0)
-    xorq ValueFalse, t0
-    tqz t0, ~1, t0
-    orq ValueFalse, t0
-    storeq t0, [cfr, t2, 8]
+    xorp ValueFalse, t0
+    tpz t0, ~1, t0
+    orp ValueFalse, t0
+    storep t0, [cfr, t2, 8]
     dispatch(3)
 
 
@@ -1251,7 +1251,7 @@ _llint_op_is_string:
     storep t1, [cfr, t2, 8]
     dispatch(3)
 .opIsStringNotCell:
-    storeq ValueFalse, [cfr, t2, 8]
+    storep ValueFalse, [cfr, t2, 8]
     dispatch(3)
 
 
@@ -2025,7 +2025,8 @@ macro nativeCallTrampoline(executableOffsetToFunction)
 
     functionEpilogue()
 
-    btqnz VM::m_exception[t3], .handleException
+    printp VM::m_exception[t3], "m_exception"
+    btpnz VM::m_exception[t3], .handleException
     ret
 
 .handleException:
