@@ -328,6 +328,12 @@ inline void Heap::didFreeBlock(size_t capacity)
 
 inline bool Heap::isPointerGCObject(TinyBloomFilter filter, MarkedBlockSet& markedBlockSet, void* pointer)
 {
+#ifdef __CHERI_PURE_CAPABILITY__
+    // Check if this is a valid capability
+    if (!__builtin_cheri_tag_get(pointer))
+        return false;
+#endif
+
     MarkedBlock* candidate = MarkedBlock::blockFor(pointer);
     if (filter.ruleOut(bitwise_cast<Bits>(candidate))) {
 #ifdef __CHERI_PURE_CAPABILITY__
