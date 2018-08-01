@@ -329,8 +329,8 @@ inline void Heap::didFreeBlock(size_t capacity)
 inline bool Heap::isPointerGCObject(TinyBloomFilter filter, MarkedBlockSet& markedBlockSet, void* pointer)
 {
 #ifdef __CHERI_PURE_CAPABILITY__
-    // Check if this is a valid capability
-    if (!__builtin_cheri_tag_get(pointer))
+    // Check if this is an invalid/null capability
+    if (!__builtin_cheri_tag_get(pointer) || !__builtin_cheri_address_get(pointer))
         return false;
 #endif
 
