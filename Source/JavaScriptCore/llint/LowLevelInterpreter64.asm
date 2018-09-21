@@ -1701,7 +1701,7 @@ macro equalNull(cellHandler, immediateHandler)
     dispatchIntIndirect(2)
 
 .immediate:
-    andq ~TagBitUndefined, t0
+    andp ~TagBitUndefined, t0
     immediateHandler(t0, .target)
     dispatch(3)
 end
@@ -1728,7 +1728,7 @@ _llint_op_jneq_null:
             loadp CodeBlock::m_globalObject[t0], t0
             bpneq Structure::m_globalObject[structure], t0, target
         end,
-        macro (value, target) bqneq value, ValueNull, target end)
+        macro (value, target) bpneq value, ValueNull, target end)
 
 
 _llint_op_jneq_ptr:
