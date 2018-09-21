@@ -488,7 +488,7 @@ end
 # value e.g. "< 0".
 def cloopGenerateConditionExpression(operands, type, conditionTest)
     if type == :int and ($cheriCapSize == 128 or $cheriCapSize == 256)
-        op1 = "__builtin_cheri_address_get(#{operands[0].clValue(:int8Ptr)})"
+        op1 = "__builtin_cheri_address_get((void*)#{operands[0].clValue(:int8Ptr)})"
     else
         op1 = operands[0].clValue(type)
     end
