@@ -1716,7 +1716,7 @@ _llint_op_jeq_null:
             bpeq Structure::m_globalObject[structure], t0, target
 .notMasqueradesAsUndefined:
         end,
-        macro (value, target) bqeq value, ValueNull, target end)
+        macro (value, target) bpeq value, ValueNull, target end)
 
 
 _llint_op_jneq_null:
