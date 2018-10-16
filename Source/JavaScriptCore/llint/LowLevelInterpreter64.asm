@@ -849,7 +849,7 @@ macro preOp(arithmeticOperation, slowPath)
     traceExecution()
     loadisFromInstruction(1, t0)
     loadp [cfr, t0, 8], t1
-    bqb t1, tagTypeNumber, .slow
+    bpb t1, tagTypeNumber, .slow
     arithmeticOperation(t1, .slow)
     orp tagTypeNumber, t1
     storep t1, [cfr, t0, 8]
