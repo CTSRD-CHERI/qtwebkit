@@ -470,7 +470,12 @@ public:
         ASSERT(wtfThreadData().stack().isGrowingDownward());
         int8_t* curr = reinterpret_cast<int8_t*>(&curr);
         int8_t* limit = reinterpret_cast<int8_t*>(m_stackLimit);
+#ifdef __CHERI_PURE_CAPABILITY__
+        // XXXKG: limit may or may not be a capability
+        return (vaddr_t)curr >= (vaddr_t)limit && static_cast<size_t>((vaddr_t)curr - (vaddr_t)limit) >= neededStackInBytes;
+#else
         return curr >= limit && static_cast<size_t>(curr - limit) >= neededStackInBytes;
+#endif
     }
 
     void* lastStackTop() { return m_lastStackTop; }
