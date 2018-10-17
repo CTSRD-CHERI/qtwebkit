@@ -68,6 +68,11 @@ void ConservativeRoots::grow()
 template<typename MarkHook>
 inline void ConservativeRoots::genericAddPointer(void* p, TinyBloomFilter filter, MarkHook& markHook)
 {
+#ifdef __CHERI_PURE_CAPABILITY__
+    // Check if this is a valid capability
+    if (!__builtin_cheri_tag_get(p))
+        return;
+#endif
     markHook.mark(p);
 
     m_copiedSpace->pinIfNecessary(p);
