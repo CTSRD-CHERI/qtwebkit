@@ -52,6 +52,8 @@ find_path(SQLITE_INCLUDE_DIR NAMES sqlite3.h
     ${PC_SQLITE_INCLUDE_DIRS}
 )
 
+message(STATUS "SQLITELIb=${PC_SQLITE_LIBDIR}")
+
 find_library(SQLITE_LIBRARIES NAMES sqlite3
     PATHS
     ${PC_SQLITE_LIBDIR}
