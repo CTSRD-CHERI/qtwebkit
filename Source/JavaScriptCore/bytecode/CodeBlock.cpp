@@ -2141,7 +2141,7 @@ void CodeBlock::finishCreation(VM& vm, ScriptExecutable* ownerExecutable, Unlink
                 instructions[i + 5].u.structure.set(vm, this, op.structure);
 
             //XXXKG: casting to a void* breaks getClosureVar() and getProperty() in CHERI
-            if (op.type == ClosureVar || op.type == UnresolvedProperty || op.type == GlobalProperty || op.type == GlobalPropertyWithVarInjectionChecks)
+            if (op.type == ClosureVar || op.type == ClosureVarWithVarInjectionChecks || op.type == UnresolvedProperty || op.type == GlobalProperty || op.type == GlobalPropertyWithVarInjectionChecks)
                 instructions[i + 6].u.operand = op.operand;
             else
                 instructions[i + 6].u.pointer = reinterpret_cast<void*>(op.operand);
@@ -2184,7 +2184,7 @@ void CodeBlock::finishCreation(VM& vm, ScriptExecutable* ownerExecutable, Unlink
             } else if (op.structure)
                 instructions[i + 5].u.structure.set(vm, this, op.structure);
             //XXXKG: casting to a void* breaks at least putProperty() on CHERI
-            if (op.type == ClosureVar || op.type == UnresolvedProperty || op.type == GlobalProperty || op.type == GlobalPropertyWithVarInjectionChecks)
+            if (op.type == ClosureVar || op.type == ClosureVarWithVarInjectionChecks || op.type == UnresolvedProperty || op.type == GlobalProperty || op.type == GlobalPropertyWithVarInjectionChecks)
                 instructions[i + 6].u.operand = op.operand;
             else
                 instructions[i + 6].u.pointer = reinterpret_cast<void*>(op.operand);
