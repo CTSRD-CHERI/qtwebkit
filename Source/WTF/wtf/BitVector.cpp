@@ -32,7 +32,9 @@
 #include <wtf/FastMalloc.h>
 #include <wtf/StdLibExtras.h>
 
+#ifdef __CHERI__
 #warning "THIS IS COMPLETELY BROKEN FOR CHERIABI"
+#endif
 
 namespace WTF {
 

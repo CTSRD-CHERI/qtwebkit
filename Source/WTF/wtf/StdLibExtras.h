@@ -121,14 +121,18 @@ inline bool isPointerAligned(void* p)
 #ifdef __CHERI_PURE_CAPABILITY__
     return __builtin_is_aligned(p, _MIPS_SZCAP/8);
 #else
-    return !((vaddr_t)(p) & (sizeof(char*) - 1));
+    return !((intptr_t)(p) & (sizeof(char*) - 1));
 #endif
 }
 
 inline bool is8ByteAligned(void* p)
 {
     static_assert(sizeof(double) == 8, "");
+#ifdef __CHERI_PURE_CAPABILITY__
     return !((vaddr_t)(p) & (sizeof(double) - 1));
+#else
+    return !((uintptr_t)(p) & (sizeof(double) - 1));
+#endif
 }
 
 /*
@@ -182,7 +186,12 @@ template<typename T> char (&ArrayLengthHelperFunction(T (&)[0]))[0];
 inline intptr_t roundUpToMultipleOf(size_t divisor, intptr_t x)
 {
     ASSERT(divisor && !(divisor & (divisor - 1)));
+#if __has_builtin(__builtin_align_up)
     return __builtin_align_up(x, divisor);
+#else
+    size_t remainderMask = divisor - 1;
+    return (x + remainderMask) & ~remainderMask;
+#endif
 }
 
 template<size_t divisor> inline intptr_t roundUpToMultipleOf(intptr_t x)
