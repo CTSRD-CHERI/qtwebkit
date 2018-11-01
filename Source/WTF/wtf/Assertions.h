@@ -28,6 +28,8 @@
 
 #include <wtf/Platform.h>
 
+#include <cstring> // for strrchr()
+
 /*
    no namespaces because this file has to be includable from C and Objective-C
 
@@ -385,7 +387,7 @@ template<int s, int t> struct check_size {
 #else
 #define LOG_VERBOSE(channel, ...) WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, &JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
 #endif
-#define LOG_CHERI(...) WTFLogVerbose(__FILE__, __LINE__, NULL, &CheriDebugLog, __VA_ARGS__)
+#define LOG_CHERI(...) WTFLogVerbose(strrchr("/" __FILE__, '/')+1, __LINE__, NULL, &CheriDebugLog, __VA_ARGS__)
 
 /* RELEASE_ASSERT */
 
