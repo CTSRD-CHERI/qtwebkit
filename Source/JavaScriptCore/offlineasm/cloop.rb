@@ -438,7 +438,7 @@ def cloopEmitPrint(operands, type)
     end
 
     formatSpecifier = case type
-    when :int;  "%p"
+    when :int8Ptr;  "%p"
     when :int8;  "%c"
     when :int32; "%d"
     when :int64; "%ld"
@@ -455,7 +455,13 @@ def cloopEmitPrint(operands, type)
     if type == :cap
         type = :int8Ptr
     end
-    $asm.putc "LOG_CHERI(\"#{operands[0].clValue(type)}#{contextString}: #{formatSpecifier}\", #{operands[0].clValue(type)});"
+
+    cast = ""
+    if type == :int8Ptr
+        cast = "(void*)"
+    end
+
+    $asm.putc "LOG_CHERI(\"#{operands[0].clValue(type)}#{contextString}: #{formatSpecifier}\", #{cast}#{operands[0].clValue(type)});"
 end
 
 def cloopEmitCompareDoubleWithNaNCheckAndBranch(operands, condition)
@@ -725,14 +731,14 @@ class Instruction
             if $cheriCapSize == 128 or $cheriCapSize == 256
                 cloopEmitPrint(operands, :cap)
             else
-                cloopEmitPrint(operands, :int) # treat as printp in non-CHERI case
+                cloopEmitPrint(operands, :int8Ptr) # treat as printp in non-CHERI case
             end
 
         when "printi"
             cloopEmitPrint(operands, :int32)
 
         when "printp"
-            cloopEmitPrint(operands, :int)
+            cloopEmitPrint(operands, :int8Ptr)
 
         when "printq"
             cloopEmitPrint(operands, :int64)
