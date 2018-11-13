@@ -428,6 +428,15 @@ def cloopEmitUnaryOperation(operands, type, operator)
 end
 
 def cloopEmitPrint(operands, type)
+    if type == :str
+        # Just printing a string
+        if operands.size > 1
+            raise "Wrong number of operands"
+        end
+        $asm.putc "LOG_CHERI(\"#{operands[0].value}\");"
+        return
+    end
+
     formatSpecifier = case type
     when :int;  "%p"
     when :int8;  "%c"
@@ -446,7 +455,7 @@ def cloopEmitPrint(operands, type)
     if type == :cap
         type = :int8Ptr
     end
-    $asm.putc "LOG_CHERI(\"#{operands[0].clValue(type)}#{contextString}: #{formatSpecifier}\\n\", #{operands[0].clValue(type)});"
+    $asm.putc "LOG_CHERI(\"#{operands[0].clValue(type)}#{contextString}: #{formatSpecifier}\", #{operands[0].clValue(type)});"
 end
 
 def cloopEmitCompareDoubleWithNaNCheckAndBranch(operands, condition)
@@ -705,6 +714,9 @@ class Instruction
 
         when "noti"
             cloopEmitUnaryOperation(operands, :int32, "!")
+
+        when "print"
+            cloopEmitPrint(operands, :str)
 
         when "printb"
             cloopEmitPrint(operands, :int8)
