@@ -169,17 +169,21 @@ else
 end
 if CHERI_128_PURECAP
     const SlotSize = 16
+    const StackAlignment = 16
+    const StackAlignmentSlots = 1
 elsif CHERI_256_PURECAP
     const SlotSize = 32
+    const StackAlignment = 32
+    const StackAlignmentSlots = 1
 else
     const SlotSize = 8
+    const StackAlignment = 16
+    const StackAlignmentSlots = 2
 end
 
 const JSEnvironmentRecord_variables = (sizeof JSEnvironmentRecord + SlotSize - 1) & ~(SlotSize - 1)
 const DirectArguments_storage = (sizeof DirectArguments + SlotSize - 1) & ~(SlotSize - 1)
 
-const StackAlignment = 16 #XXXKG: should this be changed to 2*SlotSize? (as implied by StackAlignmnetSlots?)
-const StackAlignmentSlots = 2
 const StackAlignmentMask = StackAlignment - 1
 
 const CallerFrameAndPCSize = 2 * PtrSize
