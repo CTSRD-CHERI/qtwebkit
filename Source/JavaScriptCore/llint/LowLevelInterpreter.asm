@@ -769,7 +769,7 @@ macro prepareForTailCall(callee, temp1, temp2, temp3)
 
     loadi PayloadOffset + ArgumentCount[cfr], temp2
     loadp CodeBlock[cfr], temp1
-    loadp CodeBlock::m_numParameters[temp1], temp1
+    loadi CodeBlock::m_numParameters[temp1], temp1
     bilteq temp1, temp2, .noArityFixup
     move temp1, temp2
 
