@@ -489,7 +489,11 @@ inline bool JSValue::isCell() const
 
 inline bool JSValue::isInt32() const
 {
+#ifdef __CHERI_PURE_CAPABILITY__
+    return (__builtin_cheri_address_get(u.ptr) & TagTypeNumber) == TagTypeNumber;
+#else
     return (u.asInt64 & TagTypeNumber) == TagTypeNumber;
+#endif
 }
 
 inline int64_t reinterpretDoubleToInt64(double value)
