@@ -281,7 +281,7 @@ my @features = (
       define => "ENABLE_HIGH_DPI_CANVAS", default => (isAppleWebKit()), value => \$highDPICanvasSupport },
 
     { option => "icon-database", desc => "Toggle Icondatabase support",
-      define => "ENABLE_ICONDATABASE", default => !isIOSWebKit(), value => \$icondatabaseSupport },
+      define => "ENABLE_ICONDATABASE", default => 0, value => \$icondatabaseSupport },
 
     { option => "indexed-database", desc => "Toggle Indexed Database support",
       define => "ENABLE_INDEXED_DATABASE", default => (isEfl() || isGtk() || isQt()), value => \$indexedDatabaseSupport },
