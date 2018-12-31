@@ -51,6 +51,11 @@
 std::wstring urlSuitableForTestResult(const std::wstring& url);
 #endif
 
+#if OS(FREEBSD)
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(QOffscreenIntegrationPlugin)
+#endif
+
 class TestRunner;
 
 extern volatile bool done;

@@ -1,4 +1,5 @@
 QTWEBKIT_SKIP_AUTOMOC(DumpRenderTree)
+link_directories(${qt_install_prefix_dir}/plugins/platforms)
 
 set(DumpRenderTree_SOURCES
     AccessibilityController.cpp
@@ -18,6 +19,13 @@ set(DumpRenderTree_LIBRARIES
     WTF
     WebCoreTestSupport
     WebKit
+    # Additional needed for static linking
+    qoffscreen
+    Qt5FbSupport
+    Qt5FontDatabaseSupport
+    qtfreetype
+    Qt5ServiceSupport
+    Qt5EventDispatcherSupport
 )
 
 set(DumpRenderTree_INCLUDE_DIRECTORIES
