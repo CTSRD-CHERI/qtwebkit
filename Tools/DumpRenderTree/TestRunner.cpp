@@ -53,8 +53,8 @@
 #include <Carbon/Carbon.h>
 #endif
 
-const unsigned TestRunner::viewWidth = 800;
-const unsigned TestRunner::viewHeight = 600;
+const unsigned TestRunner::viewWidth = 1024;
+const unsigned TestRunner::viewHeight = 768;
 
 const unsigned TestRunner::w3cSVGViewWidth = 480;
 const unsigned TestRunner::w3cSVGViewHeight = 360;
