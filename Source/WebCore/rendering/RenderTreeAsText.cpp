@@ -876,6 +876,16 @@ static void writeSelection(TextStream& ts, const RenderObject* renderer)
         return;
 
     VisibleSelection selection = frame->selection().selection();
+#ifdef __CHERI_PURE_CAPABILITY__
+    // XXXKG: ugly hack to prevent if-condition from being incorrectly
+    // optimised out at O2.  Clang incorrectly thinks if-condition is always
+    // true and so unconditionally executes the then block. With this hack it
+    // infers that both selection.isCaret() and selection.isRange() are false
+    // and optimises the entire if-statement out. Not sure if this is
+    // entirely intended behaviour either.
+    char buffer [2];
+    sprintf(buffer,"%d", selection.isCaret());
+#endif
     if (selection.isCaret()) {
         ts << "caret: position " << selection.start().deprecatedEditingOffset() << " of " << nodePosition(selection.start().deprecatedNode());
         if (selection.affinity() == UPSTREAM)
