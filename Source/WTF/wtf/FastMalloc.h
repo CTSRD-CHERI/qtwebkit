@@ -45,9 +45,9 @@ WTF_EXPORT_PRIVATE void* fastCalloc(size_t numElements, size_t elementSize) __at
 WTF_EXPORT_PRIVATE void* fastRealloc(void*, size_t) __attribute__((alloc_size(2)));
 WTF_EXPORT_PRIVATE char* fastStrDup(const char*);
 
-WTF_EXPORT_PRIVATE TryMallocReturnValue tryFastMalloc(size_t) __attribute__((alloc_size(1)));
-TryMallocReturnValue tryFastZeroedMalloc(size_t) __attribute__((alloc_size(1)));
-WTF_EXPORT_PRIVATE TryMallocReturnValue tryFastCalloc(size_t numElements, size_t elementSize) __attribute__((alloc_size(1, 2)));
+WTF_EXPORT_PRIVATE TryMallocReturnValue tryFastMalloc(size_t);
+TryMallocReturnValue tryFastZeroedMalloc(size_t);
+WTF_EXPORT_PRIVATE TryMallocReturnValue tryFastCalloc(size_t numElements, size_t elementSize);
 
 WTF_EXPORT_PRIVATE void fastFree(void*);
 
@@ -58,7 +58,7 @@ WTF_EXPORT_PRIVATE void fastAlignedFree(void*);
 WTF_EXPORT_PRIVATE size_t fastMallocSize(const void*);
 
 // FIXME: This is non-helpful; fastMallocGoodSize will be removed soon.
-WTF_EXPORT_PRIVATE size_t fastMallocGoodSize(size_t) __attribute__((alloc_size(1)));
+WTF_EXPORT_PRIVATE size_t fastMallocGoodSize(size_t);
 
 WTF_EXPORT_PRIVATE void releaseFastMallocFreeMemory();
 WTF_EXPORT_PRIVATE void releaseFastMallocFreeMemoryForThisThread();
