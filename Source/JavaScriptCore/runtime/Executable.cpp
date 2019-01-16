@@ -825,7 +825,7 @@ CodeBlockHash NativeExecutable::hashFor(CodeSpecializationKind kind) const
     
     RELEASE_ASSERT(kind == CodeForConstruct);
 #ifdef __CHERI_PURE_CAPABILITY__
-    return CodeBlockHash((__cheri_addr unsigned)m_constructor);
+    return CodeBlockHash(static_cast<unsigned>((__cheri_addr size_t)m_constructor));
 #else
     return CodeBlockHash(static_cast<unsigned>(bitwise_cast<size_t>(m_constructor)));
 #endif
