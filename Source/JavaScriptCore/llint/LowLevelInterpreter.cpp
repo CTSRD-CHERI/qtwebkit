@@ -469,7 +469,7 @@ JSValue CLoop::execute(OpcodeID entryOpcodeID, void* executableAddress, VM* vm, 
             return JSValue(t1.i, t0.i); // returning JSValue(tag, payload);
 #else
             JSValue ret = JSValue::decode(t0.encodedJSValue);
-            LOG_CHERI("ret: %p\n", ret.u.asInt64);
+            LOG_CHERI("ret: %p\n", (void*)ret.u.asInt64);
             LOG_CHERI("startCFR: %p, cfr.callFrame: %p\n", startCFR, cfr.callFrame);
             return ret;
 #endif
@@ -487,8 +487,8 @@ JSValue CLoop::execute(OpcodeID entryOpcodeID, void* executableAddress, VM* vm, 
             t0.i = result.payload();
 #else
             t0.encodedJSValue = JSValue::encode(result);
-            LOG_CHERI("t0.encodedJSValue: %p\n", t0.encodedJSValue);
-            LOG_CHERI("cfr.i: %p\n", cfr.i);
+            LOG_CHERI("t0.encodedJSValue: %p\n", (void*)t0.encodedJSValue);
+            LOG_CHERI("cfr.i: %p\n", (void*)cfr.i);
 #endif
             opcode = lr.opcode;
             DISPATCH_OPCODE();
