@@ -50,6 +50,10 @@
 #include <io.h>
 #endif
 
+#if __has_include(<statcounters.h>)
+#include <statcounters.h>
+#endif
+
 #include <limits.h>
 
 #include <wtf/Assertions.h>
@@ -112,8 +116,15 @@ int main(int argc, char* argv[])
     if (suppressQtDebugOutput)
         qInstallMessageHandler(messageHandler);
 
+    statcountersDeclareBank(st_start);
+    statcountersStartPhase(&st_start, "WebCore::initializeWebCoreQt()");
     WebCore::initializeWebCoreQt();
+    statcountersEndPhase(&st_start, "WebCore::initializeWebCoreQt()");
+
+    statcountersStartPhase(&st_start, "WebKit::QtTestSupport::initializeTestFonts()");
     WebKit::QtTestSupport::initializeTestFonts();
+    statcountersEndPhase(&st_start, "WebKit::QtTestSupport::initializeTestFonts()");
+    statcountersStartPhase(&st_start, "remaining setup code");
 
     QApplication::setStyle(QStyleFactory::create(QLatin1String("windows")));
     QApplication::setDesktopSettingsAware(false);
@@ -198,5 +209,7 @@ int main(int argc, char* argv[])
         }
         dumper.processArgsLine(args);
     }
+    statcountersEndPhase(&st_start, "remaining setup code");
+
     return app.exec();
 }

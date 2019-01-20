@@ -616,6 +616,9 @@ static bool isDumpAsTextTest(const QUrl& url)
 
 void DumpRenderTree::open(const QUrl& url)
 {
+    std::string phaseBase = url.toString().toStdString();
+    statcountersDeclareBank(stat_open);
+    statcountersStartPhase(&stat_open, " initial setup " + phaseBase);
     DumpRenderTreeSupportQt::dumpResourceLoadCallbacksPath(QFileInfo(url.toString()).path());
     resetToConsistentStateBeforeTesting(url);
 
@@ -632,6 +635,8 @@ void DumpRenderTree::open(const QUrl& url)
         testRunner()->dumpHistoryCallbacks();
 
     // W3C SVG tests expect to be 480x360
+    statcountersEndPhase(&stat_open, " initial setup " + phaseBase);
+    statcountersStartPhase(&stat_open, " viewport/focus in " + phaseBase);
     bool isW3CTest = url.toString().contains("svg/W3C-SVG-1.1");
     int width = isW3CTest ? TestRunner::w3cSVGViewWidth : TestRunner::viewWidth;
     int height = isW3CTest ? TestRunner::w3cSVGViewHeight : TestRunner::viewHeight;
@@ -641,14 +646,24 @@ void DumpRenderTree::open(const QUrl& url)
 
     QFocusEvent ev(QEvent::FocusIn);
     m_page->event(&ev);
+    statcountersEndPhase(&stat_open, " viewport/focus in " + phaseBase);
 
+    statcountersStartPhase(&stat_open, " clearMemoryCaches() in " + phaseBase);
     WebKit::QtTestSupport::clearMemoryCaches();
+    statcountersStartPhase(&stat_open, " clearMemoryCaches() in " + phaseBase);
 
+    statcountersStartPhase(&stat_open, " initializeTestFonts() in " + phaseBase);
     WebKit::QtTestSupport::initializeTestFonts();
+    statcountersEndPhase(&stat_open, " initializeTestFonts() in " + phaseBase);
 
+    statcountersStartPhase(&stat_open, " dumpFrameLoader() in " + phaseBase);
     DumpRenderTreeSupportQt::dumpFrameLoader(url.toString().contains("loading/"));
     setTextOutputEnabled(true);
+    statcountersEndPhase(&stat_open, " dumpFrameLoader() in " + phaseBase);
+
+    statcountersStartPhase(&stat_open, " m_page->mainFrame()->load in " + phaseBase);
     m_page->mainFrame()->load(url);
+    statcountersEndPhase(&stat_open, " m_page->mainFrame()->load in " + phaseBase);
 }
 
 void DumpRenderTree::readLine()
@@ -713,6 +728,8 @@ void DumpRenderTree::processLine(const QString &input)
     QString pathOrURL = QLatin1String(command.pathOrURL.c_str());
     m_dumpPixelsForCurrentTest = command.shouldDumpPixels || m_dumpPixelsForAllTests;
     m_expectedHash = QLatin1String(command.expectedPixelHash.c_str());
+
+    qDebug() << __func__ << pathOrURL;
 
     if (pathOrURL.startsWith(QLatin1String("http:"))
             || pathOrURL.startsWith(QLatin1String("https:"))
