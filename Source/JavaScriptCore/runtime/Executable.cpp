@@ -818,7 +818,7 @@ CodeBlockHash NativeExecutable::hashFor(CodeSpecializationKind kind) const
 {
     if (kind == CodeForCall)
 #ifdef __CHERI_PURE_CAPABILITY__
-        return CodeBlockHash((__cheri_addr unsigned)m_function);
+        return CodeBlockHash(static_cast<unsigned>((__cheri_addr size_t)m_function));
 #else
         return CodeBlockHash(static_cast<unsigned>(bitwise_cast<size_t>(m_function)));
 #endif
