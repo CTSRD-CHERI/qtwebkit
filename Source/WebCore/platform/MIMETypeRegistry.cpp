@@ -35,6 +35,8 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringHash.h>
 
+#include <wtf/BeriStatCounters.h>
+
 #if USE(CG)
 #include "ImageSourceCG.h"
 #if !PLATFORM(IOS)
@@ -48,6 +50,7 @@
 #if PLATFORM(QT)
 #include <QImageReader>
 #include <QImageWriter>
+#include <QMimeDataBase>
 #endif
 
 #if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
@@ -469,6 +472,8 @@ static void initializeUnsupportedTextMIMETypes()
 
 static void initializeMIMETypeRegistry()
 {
+    statcountersDeclareBank(stat_mime);
+    statcountersStartPhase(&stat_mime, " initializeMIMETypeRegistry");
     supportedJavaScriptMIMETypes = new HashSet<String, ASCIICaseInsensitiveHash>;
     initializeSupportedJavaScriptMIMETypes();
 
@@ -487,6 +492,11 @@ static void initializeMIMETypeRegistry()
 
     unsupportedTextMIMETypes = new HashSet<String, ASCIICaseInsensitiveHash>;
     initializeUnsupportedTextMIMETypes();
+#if PLATFORM(QT)
+    // load the QMimeDataBase() (this takes forever when using the XML instead of the cache)
+    QMimeType mimeType = QMimeDatabase().mimeTypeForName(QString());
+#endif
+    statcountersEndPhase(&stat_mime, " initializeMIMETypeRegistry");
 }
 
 #if !PLATFORM(QT)

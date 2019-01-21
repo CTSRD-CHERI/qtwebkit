@@ -384,10 +384,12 @@ template<int s, int t> struct check_size {
 
 #if LOG_DISABLED
 #define LOG_VERBOSE(channel, ...) ((void)0)
+#define LOG_CHERI(...) ((void)0)
 #else
+#error "LOGGING IS ON"
 #define LOG_VERBOSE(channel, ...) WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, &JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
-#endif
 #define LOG_CHERI(...) WTFLogVerbose(strrchr("/" __FILE__, '/')+1, __LINE__, NULL, &CheriDebugLog, __VA_ARGS__)
+#endif
 
 /* RELEASE_ASSERT */
 
