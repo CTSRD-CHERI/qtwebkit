@@ -50,7 +50,7 @@
 #if PLATFORM(QT)
 #include <QImageReader>
 #include <QImageWriter>
-#include <QMimeDataBase>
+#include <QMimeDatabase>
 #endif
 
 #if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
