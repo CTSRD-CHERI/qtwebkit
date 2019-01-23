@@ -82,6 +82,7 @@ macro cCall2(function)
         move 8[r0], r1
         move [r0], r0
     elsif C_LOOP
+        cloopCallSlowPathVoid _llint_log_slow_path_call, a0, a1
         cloopCallSlowPath function, a0, a1
     else
         error
@@ -90,6 +91,7 @@ end
 
 macro cCall2Void(function)
     if C_LOOP
+        cloopCallSlowPathVoid  _llint_log_slow_path_call, a0, a1
         cloopCallSlowPathVoid function, a0, a1
     elsif X86_64_WIN
         # Note: we cannot use the cCall2 macro for Win64 in this case,
@@ -153,6 +155,7 @@ macro doVMEntry(makeCall)
     if C_LOOP
         move entry, t4
         move vm, t5
+        cloopCallSlowPathVoid _llint_log_slow_path_call, a0, a1
         cloopCallSlowPath _llint_stack_check_at_vm_entry, vm, t3
         bpeq t0, 0, .stackCheckFailed
         move t4, entry

@@ -41,6 +41,8 @@
 #include <qurl.h>
 #include <qwebdatabase.h>
 
+#include "LLIntSlowPaths.h"
+
 #ifdef Q_WS_X11
 #include <qx11info_x11.h>
 #endif
@@ -219,6 +221,7 @@ int main(int argc, char* argv[])
     });
     int result = app.exec();
     statcountersEndPhase(&st_main, "main()");
+    fprintf(stderr, "num of slow JSCore calls: %lu\n", JSC::LLInt::llint_get_num_slow_path_calls());
     fprintf(stderr, "main() finished.");
     return result;
 }
