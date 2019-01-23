@@ -132,6 +132,7 @@
 #include <runtime/JSCJSValue.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuffer.h>
+#include <wtf/BeriStatCounters.h>
 
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "ColorChooser.h"
@@ -363,6 +364,7 @@ Internals::~Internals()
 
 void Internals::resetToConsistentState(Page* page)
 {
+    statcountersMeasureScope("InternalSettings::resetToConsistentState()");
     ASSERT(page);
 
     page->setPageScaleFactor(1, IntPoint(0, 0));

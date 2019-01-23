@@ -97,6 +97,8 @@ void printUsage()
 
 int main(int argc, char* argv[])
 {
+    statcountersDeclareBank(st_main);
+    statcountersStartPhase(&st_main, "main()");
 #ifdef Q_OS_WIN
     _setmode(1, _O_BINARY);
     _setmode(2, _O_BINARY);
@@ -211,5 +213,12 @@ int main(int argc, char* argv[])
     }
     statcountersEndPhase(&st_start, "remaining setup code");
 
-    return app.exec();
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, [&]() {
+        fprintf(stderr, "QCoreApplication::aboutToQuit()");
+        statcountersEndPhase(&st_main, "QCoreApplication::aboutToQuit()");
+    });
+    int result = app.exec();
+    statcountersEndPhase(&st_main, "main()");
+    fprintf(stderr, "main() finished.");
+    return result;
 }

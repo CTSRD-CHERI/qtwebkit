@@ -38,6 +38,7 @@
 #include <JavaScriptCore/Profile.h>
 #include <interpreter/CallFrame.h>
 #include <runtime/IdentifierInlines.h>
+#include <wtf/BeriStatCounters.h>
 
 using namespace JSC;
 using namespace WebCore;
@@ -56,6 +57,7 @@ void injectInternalsObject(JSContextRef context)
 
 void resetInternalsObject(JSContextRef context)
 {
+    statcountersMeasureScope("WebCoreTestSupport::resetInternalsObject(JSContextRef context)");
     ExecState* exec = toJS(context);
     JSLockHolder lock(exec);
     JSDOMGlobalObject* globalObject = jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject());

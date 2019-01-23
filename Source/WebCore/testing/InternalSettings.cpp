@@ -41,6 +41,8 @@
 #include "Supplementable.h"
 #include "TextRun.h"
 
+#include <wtf/BeriStatCounters.h>
+
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "ColorChooser.h"
 #endif
@@ -214,6 +216,7 @@ InternalSettings::InternalSettings(Page* page)
 
 void InternalSettings::resetToConsistentState()
 {
+    statcountersMeasureScope("InternalSettings::resetToConsistentState()");
     page()->setPageScaleFactor(1, IntPoint(0, 0));
     page()->setCanStartMedia(true);
     page()->settings().setForcePendingWebGLPolicy(false);

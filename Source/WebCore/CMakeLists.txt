@@ -3817,6 +3817,13 @@ endif ()
 
 target_link_libraries(WebCore PUBLIC ${WebCore_LIBRARIES})
 
+check_include_files("statcounters.h" LIBSTATCOUNTERS_FOUND)
+message(STATUS "LIBSTATCOUNTERS_FOUND=${LIBSTATCOUNTERS_FOUND}")
+if (LIBSTATCOUNTERS_FOUND)
+    target_link_libraries(WebCore INTERFACE -Wl,--whole-archive statcounters -Wl,--no-whole-archive)
+endif()
+
+
 if (SHARED_CORE)
     set_target_properties(WebCore PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
     install(TARGETS WebCore DESTINATION "${LIB_INSTALL_DIR}")
