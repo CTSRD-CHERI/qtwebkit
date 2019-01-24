@@ -54,6 +54,7 @@ set(WTF_HEADERS
     MathExtras.h
     MediaTime.h
     MessageQueue.h
+    MemoryProfiler.h
     MetaAllocator.h
     MetaAllocatorHandle.h
     Noncopyable.h
@@ -174,6 +175,7 @@ set(WTF_SOURCES
     MD5.cpp
     MainThread.cpp
     MediaTime.cpp
+    MemoryProfiler.cpp
     MetaAllocator.cpp
     NumberOfCores.cpp
     OSRandomSource.cpp
@@ -240,6 +242,17 @@ set(WTF_INCLUDE_DIRECTORIES
 set(WTF_LIBRARIES
     ${CMAKE_DL_LIBS}
 )
+
+check_include_files("libmw.h" LIBMEMWALK_FOUND)
+message(STATUS "LIBMEMWALK_FOUND=${LIBMEMWALK_FOUND}")
+if (LIBMEMWALK_FOUND)
+    list(APPEND WTF_LIBRARIES
+        procstat
+        kvm
+        util
+        mw
+    )
+endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     list(APPEND WTF_HEADERS

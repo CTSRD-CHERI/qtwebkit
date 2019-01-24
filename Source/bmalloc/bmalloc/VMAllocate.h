@@ -116,6 +116,8 @@ inline void vmValidatePhysical(void* p, size_t vmSize)
 inline void* tryVMAllocate(size_t vmSize)
 {
     vmValidate(vmSize);
+    //fprintf(stderr, "[%s] mmap(%zu)\n", __FUNCTION__, vmSize);
+    MemoryProfiler::recordMmap(vmSize);
     void* result = mmap(0, vmSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, BMALLOC_VM_TAG, 0);
     if (result == MAP_FAILED) {
         logVMFailure();
@@ -134,6 +136,8 @@ inline void* vmAllocate(size_t vmSize)
 inline void vmDeallocate(void* p, size_t vmSize)
 {
     vmValidate(p, vmSize);
+    //fprintf(stderr, "[%s] munmap(%zu)\n", __FUNCTION__, vmSize);
+    MemoryProfiler::recordMunmap(vmSize);
     munmap(p, vmSize);
 }
 

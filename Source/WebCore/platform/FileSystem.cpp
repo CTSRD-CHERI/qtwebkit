@@ -28,6 +28,7 @@
 #include "FileSystem.h"
 
 #include <wtf/HexNumber.h>
+#include <wtf/MemoryProfiler.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 
@@ -152,6 +153,8 @@ MappedFileData::~MappedFileData()
 #if !OS(WINDOWS)
     if (!m_fileData)
         return;
+    //fprintf(stderr, "[%s] munmap(%zu)\n", __FUNCTION__, m_fileSize);
+    MemoryProfiler::recordMunmap(m_fileSize);
     munmap(m_fileData, m_fileSize);
 #endif
 }
@@ -189,6 +192,8 @@ MappedFileData::MappedFileData(const String& filePath, bool& success)
         return;
     }
 
+    //fprintf(stderr, "[%s] mmap(%zu)\n", __FUNCTION__, size);
+    MemoryProfiler::recordMmap(size);
     void* data = mmap(0, size, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0);
     close(fd);
 

@@ -40,8 +40,9 @@
 #include <qtimer.h>
 #include <qurl.h>
 #include <qwebdatabase.h>
-
 #include "LLIntSlowPaths.h"
+
+#include <wtf/MemoryProfiler.h>
 
 #ifdef Q_WS_X11
 #include <qx11info_x11.h>
@@ -76,7 +77,7 @@ bool isOption(const QString& str)
     return str == QString("-v") || str == QString("-p") || str == QString("--pixel-tests")
            || str == QString("--stdout") || str == QString("--stderr")
            || str == QString("--timeout") || str == QString("--no-timeout")
-           || str == QString("-");
+           || str == QString("--memory-profiling") || str == QString("-");
 }
 
 QString takeOptionValue(QStringList& arguments, int index)
@@ -92,7 +93,7 @@ QString takeOptionValue(QStringList& arguments, int index)
 
 void printUsage()
 {
-    fprintf(stderr, "Usage: DumpRenderTree [-v|-p|--pixel-tests] [--stdout output_filename] [-stderr error_filename] [--no-timeout] [--timeout timeout_MS] filename [filename2..n]\n");
+    fprintf(stderr, "Usage: DumpRenderTree [-v|-p|--pixel-tests] [--stdout output_filename] [-stderr error_filename] [--no-timeout] [--timeout timeout_MS] [--memory-profiling] filename [filename2..n]\n");
     fprintf(stderr, "Or folder containing test files: DumpRenderTree [-v|--pixel-tests] dirpath\n");
     fflush(stderr);
 }
@@ -108,12 +109,17 @@ int main(int argc, char* argv[])
 
     // Suppress debug output from Qt if not started with -v
     bool suppressQtDebugOutput = true;
+    bool profileMemoryUsage = false;
     for (int i = 1; i < argc; ++i) {
         if (!qstrcmp(argv[i], "-v")) {
             suppressQtDebugOutput = false;
-            break;
+        } else if (!qstrcmp(argv[i], "--memory-profiling")) {
+            profileMemoryUsage = true;
         }
     }
+
+    if (profileMemoryUsage)
+        MemoryProfiler::start();
 
     // Has to be done before QApplication is constructed in case
     // QApplication itself produces debug output.
@@ -221,6 +227,8 @@ int main(int argc, char* argv[])
     });
     int result = app.exec();
     statcountersEndPhase(&st_main, "main()");
+    if (profileMemoryUsage)
+        MemoryProfiler::stop();
     fprintf(stderr, "num of slow JSCore calls: %lu\n", JSC::LLInt::llint_get_num_slow_path_calls());
     fprintf(stderr, "main() finished.");
     return result;
