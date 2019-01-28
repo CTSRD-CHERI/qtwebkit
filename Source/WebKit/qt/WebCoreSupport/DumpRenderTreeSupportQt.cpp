@@ -95,6 +95,7 @@
 
 #include <QPainter>
 #include <wtf/CurrentTime.h>
+#include <wtf/BeriStatCounters.h>
 
 using namespace WebCore;
 
@@ -776,20 +777,32 @@ void DumpRenderTreeSupportQt::injectInternalsObject(JSContextRef context)
 
 void DumpRenderTreeSupportQt::resetInternalsObject(QWebFrameAdapter* adapter)
 {
+    statcountersMeasureScope("DumpRenderTreeSupportQt::resetInternalsObject(QWebFrameAdapter* adapter)");
+    
+    statcountersDeclareAndStartPhase(st_reset, "toJSDOMWindow(coreFrame, mainThreadNormalWorld())");
     WebCore::Frame* coreFrame = adapter->frame;
     JSDOMWindow* window = toJSDOMWindow(coreFrame, mainThreadNormalWorld());
     Q_ASSERT(window);
+    statcountersEndPhase(&st_reset, "toJSDOMWindow(coreFrame, mainThreadNormalWorld())");
 
+    statcountersStartPhase(&st_reset, "JSC::JSLockHolder lock(window->globalExec())");
     JSC::ExecState* exec = window->globalExec();
     Q_ASSERT(exec);
     JSC::JSLockHolder lock(exec);
+    statcountersEndPhase(&st_reset, "JSC::JSLockHolder lock(window->globalExec())");
 
+    statcountersStartPhase(&st_reset, "toRef(exec)");
     JSContextRef context = toRef(exec);
+    statcountersEndPhase(&st_reset, "toRef(exec)");
+
+    statcountersStartPhase(&st_reset, "Call WebCoreTestSupport::resetInternalsObject(context)");
     WebCoreTestSupport::resetInternalsObject(context);
+    statcountersEndPhase(&st_reset, "Call WebCoreTestSupport::resetInternalsObject(context)");
 }
 
 void DumpRenderTreeSupportQt::resetInternalsObject(JSContextRef context)
 {
+    statcountersMeasureScope("DumpRenderTreeSupportQt::resetInternalsObject(JSContextRef context)");
     WebCoreTestSupport::resetInternalsObject(context);
 }
 

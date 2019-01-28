@@ -44,6 +44,7 @@
 #include <runtime/JSInternalPromiseDeferred.h>
 #include <runtime/Microtask.h>
 #include <wtf/MainThread.h>
+#include <wtf/BeriStatCounters.h>
 
 #if PLATFORM(IOS)
 #include "ChromeClient.h"
@@ -291,6 +292,7 @@ JSValue toJS(ExecState* exec, DOMWindow* domWindow)
 
 JSDOMWindow* toJSDOMWindow(Frame* frame, DOMWrapperWorld& world)
 {
+    statcountersMeasureScope("toJSDOMWindow(Frame* frame, DOMWrapperWorld& world)");
     if (!frame)
         return 0;
     return frame->script().windowShell(world)->window();
@@ -298,6 +300,7 @@ JSDOMWindow* toJSDOMWindow(Frame* frame, DOMWrapperWorld& world)
 
 JSDOMWindow* toJSDOMWindow(JSValue value)
 {
+    statcountersMeasureScope("toJSDOMWindow(JSValue value)");
     if (!value.isObject())
         return 0;
     while (!value.isNull()) {

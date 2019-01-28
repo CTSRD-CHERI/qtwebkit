@@ -176,8 +176,11 @@ QWebInspector* WebPage::webInspector()
 
 void WebPage::resetSettings()
 {
+    statcountersMeasureScope("WebPage::resetSettings()");
     // After each layout test, reset the settings that may have been changed by
     // testRunner.overridePreference() or similar.
+{
+    statcountersMeasureScope("settings()->reset stuff");
     settings()->resetFontSize(QWebSettings::DefaultFontSize);
     settings()->resetAttribute(QWebSettings::JavascriptCanOpenWindows);
     settings()->resetAttribute(QWebSettings::JavascriptEnabled);
@@ -195,18 +198,39 @@ void WebPage::resetSettings()
     settings()->resetAttribute(QWebSettings::CSSGridLayoutEnabled);
     settings()->resetAttribute(QWebSettings::AcceleratedCompositingEnabled);
     settings()->resetAttribute(QWebSettings::FullScreenSupportEnabled);
-
+}
+{
+    statcountersMeasureScope("m_drt->testRunner()->setCaretBrowsingEnabled(false)");
     m_drt->testRunner()->setCaretBrowsingEnabled(false);
+}
+{
+    statcountersMeasureScope("m_drt->testRunner()->setAuthorAndUserStylesEnabled(true)");
     m_drt->testRunner()->setAuthorAndUserStylesEnabled(true);
+}
+{
+    statcountersMeasureScope("m_drt->jscTestRunner()->setDefersLoading(false)");
     m_drt->jscTestRunner()->setDefersLoading(false);
+}
 
+{
+    statcountersMeasureScope("m_drt->testRunner()->setXSSAuditorEnabled(false)");
     // globalSettings must be reset explicitly.
     m_drt->testRunner()->setXSSAuditorEnabled(false);
+}
 
+{
+    statcountersMeasureScope("QWebSettings::setMaximumPagesInCache(0)");
     QWebSettings::setMaximumPagesInCache(0); // reset to default
+}
+{
+    statcountersMeasureScope("settings()->setUserStyleSheetUrl(QUrl())");
     settings()->setUserStyleSheetUrl(QUrl()); // reset to default
+}
 
+{
+    statcountersMeasureScope("DumpRenderTreeSupportQt::resetInternalsObject");
     DumpRenderTreeSupportQt::resetInternalsObject(mainFrame()->handle());
+}
 
     m_pendingGeolocationRequests.clear();
 }
@@ -527,42 +551,63 @@ void DumpRenderTree::dryRunPrint(QWebFrame* frame)
 
 void DumpRenderTree::resetToConsistentStateBeforeTesting(const QUrl& url)
 {
+    statcountersMeasureScope("DumpRenderTree::resetToConsistentStateBeforeTesting()");
     // reset so that any current loads are stopped
     // NOTE: that this has to be done before the testRunner is
     // reset or we get timeouts for some tests.
-    m_page->blockSignals(true);
-    m_page->triggerAction(QWebPage::Stop);
-    m_page->blockSignals(false);
-
-    QList<QWebSecurityOrigin> knownOrigins = QWebSecurityOrigin::allOrigins();
-    for (int i = 0; i < knownOrigins.size(); ++i)
-        knownOrigins[i].setDatabaseQuota(databaseDefaultQuota);
+    {
+        statcountersMeasureScope("m_page->triggerAction(QWebPage::Stop)");
+        m_page->blockSignals(true);
+        m_page->triggerAction(QWebPage::Stop);
+        m_page->blockSignals(false);
+    }
+    {
+        statcountersMeasureScope("reset QWebSecurityOrigin::allOrigins()");
+        QList<QWebSecurityOrigin> knownOrigins = QWebSecurityOrigin::allOrigins();
+        for (int i = 0; i < knownOrigins.size(); ++i)
+            knownOrigins[i].setDatabaseQuota(databaseDefaultQuota);
+    }
 
     // reset the testRunner at this point, so that we under no
     // circumstance dump (stop the waitUntilDone timer) during the reset
     // of the DRT.
-    m_controller->reset();
+    {
+        statcountersMeasureScope("m_controller->reset()");
+        m_controller->reset();
+    }
 
-    m_jscController = TestRunner::create(url.toString().toStdString(), m_expectedHash.toStdString());
+    {
+        statcountersMeasureScope("create m_jscController");
+        m_jscController = TestRunner::create(url.toString().toStdString(), m_expectedHash.toStdString());
+    }
 
     // reset mouse clicks counter
     m_eventSender->resetClickCount();
 
-    closeRemainingWindows();
+    {
+        statcountersMeasureScope("closeRemainingWindows()");
+        closeRemainingWindows();
+    }
     
     // Call setTextSizeMultiplier(1.0) to reset TextZoomFactor and PageZoomFactor too. 
     // It should be done before resetSettings() to guarantee resetting QWebSettings::ZoomTextOnly correctly.
     m_page->mainFrame()->setTextSizeMultiplier(1.0);
 
-    m_page->resetSettings();
+    {
+        statcountersMeasureScope("m_page->resetSettings()");
+        m_page->resetSettings();
+    }
 #ifndef QT_NO_UNDOSTACK
     m_page->undoStack()->clear();
 #endif
 
-    clearHistory(m_page);
-    DumpRenderTreeSupportQt::scalePageBy(mainFrameAdapter(), 1, QPoint(0, 0));
-    DumpRenderTreeSupportQt::clearFrameName(mainFrameAdapter());
-    DumpRenderTreeSupportQt::removeUserStyleSheets(pageAdapter());
+    {
+        statcountersMeasureScope("clearHistory+More Qt stuff");
+        clearHistory(m_page);
+        DumpRenderTreeSupportQt::scalePageBy(mainFrameAdapter(), 1, QPoint(0, 0));
+        DumpRenderTreeSupportQt::clearFrameName(mainFrameAdapter());
+        DumpRenderTreeSupportQt::removeUserStyleSheets(pageAdapter());
+    }
 
     m_page->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
     m_page->mainFrame()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAsNeeded);
@@ -582,14 +627,20 @@ void DumpRenderTree::resetToConsistentStateBeforeTesting(const QUrl& url)
 
     DumpRenderTreeSupportQt::setWindowsBehaviorAsEditingBehavior(pageAdapter());
 
-    QLocale::setDefault(QLocale::c());
+    {
+        statcountersMeasureScope("QLocale::setDefault(QLocale::c())");
+        QLocale::setDefault(QLocale::c());
+    }
 
     testRunner()->setDeveloperExtrasEnabled(true);
 #ifndef Q_OS_WINCE
     setlocale(LC_ALL, "");
 #endif
 
-    DumpRenderTreeSupportQt::clearOpener(mainFrameAdapter());
+    {
+        statcountersMeasureScope("DumpRenderTreeSupportQt::clearOpener");
+        DumpRenderTreeSupportQt::clearOpener(mainFrameAdapter());
+    }
 }
 
 static bool isGlobalHistoryTest(const QUrl& url)
@@ -617,6 +668,7 @@ static bool isDumpAsTextTest(const QUrl& url)
 void DumpRenderTree::open(const QUrl& url)
 {
     std::string phaseBase = url.toString().toStdString();
+    statcountersMeasureScope("DumpRenderTree::open(" + phaseBase + ")");
     statcountersDeclareBank(stat_open);
     statcountersStartPhase(&stat_open, " initial setup " + phaseBase);
     DumpRenderTreeSupportQt::dumpResourceLoadCallbacksPath(QFileInfo(url.toString()).path());
@@ -771,6 +823,7 @@ void DumpRenderTree::closeRemainingWindows()
 
 void DumpRenderTree::initJSObjects()
 {
+    statcountersMeasureScope("DumpRenderTree::initJSObjects()");
     QWebFrame *frame = qobject_cast<QWebFrame*>(sender());
     Q_ASSERT(frame);
 
@@ -810,14 +863,19 @@ void DumpRenderTree::initJSObjects()
         JSObjectSetProperty(context, args, jscBasedTestRunnerName.get(), wrappedTestRunner, 0, 0);
 
         JSValueRef ex = 0;
+        statcountersDeclareAndStartPhase(st_eval, "JSEvaluateScript(helperScript)");
         JSEvaluateScript(context, helperScript.get(), args, 0, 0, &ex);
+        statcountersEndPhase(&st_eval, "JSEvaluateScript(helperScript)");
         if (ex) {
             JSRetainPtr<JSStringRef> msg(Adopt, JSValueToStringCopy(context, ex, 0));
             fprintf(stderr, "Error evaluating TestRunner setup-script: %s\n", qPrintable(JSStringCopyQString(msg.get())));
         }
     }
 
+    statcountersDeclareAndStartPhase(st_inject, "DumpRenderTreeSupportQt::injectInternalsObject(frame->handle())");
     DumpRenderTreeSupportQt::injectInternalsObject(frame->handle());
+    statcountersEndPhase(&st_inject, "DumpRenderTreeSupportQt::injectInternalsObject(frame->handle())");
+
 }
 
 void DumpRenderTree::showPage()
@@ -857,6 +915,7 @@ QString DumpRenderTree::dumpFrameScrollPosition(QWebFrame* frame)
 
 QString DumpRenderTree::dumpFramesAsText(QWebFrame* frame)
 {
+    statcountersMeasureScope("DumpRenderTree::dumpFramesAsText()");
     if (!frame || !DumpRenderTreeSupportQt::hasDocumentElement(frame->handle()))
         return QString();
 
@@ -980,6 +1039,8 @@ static const char *methodNameStringForFailedTest(TestRunner *controller)
 
 void DumpRenderTree::dump()
 {
+    statcountersDeclareBank(st_dump);
+    statcountersStartPhase(&st_dump, "DumpRenderTree::dump()");
     // Prevent any further frame load or resource load callbacks from appearing after we dump the result.
     DumpRenderTreeSupportQt::dumpFrameLoader(false);
     DumpRenderTreeSupportQt::dumpResourceLoadCallbacks(false);
@@ -1082,6 +1143,7 @@ void DumpRenderTree::dump()
         }
 
         if (dumpImage) {
+            statcountersMeasureScope("dumpImage");
             image.setText("checksum", actualHash);
 
             QBuffer buffer;
@@ -1114,7 +1176,9 @@ void DumpRenderTree::dump()
     fflush(stdout);
     fflush(stderr);
 
+    statcountersEndPhase(&st_dump, "DumpRenderTree::dump() (before emit ready())");
      emit ready();
+    statcountersEndPhase(&st_dump, "DumpRenderTree::dump() (after emit ready())");
 }
 
 void DumpRenderTree::titleChanged(const QString &s)
@@ -1175,6 +1239,7 @@ void DumpRenderTree::statusBarMessage(const QString& message)
 
 QWebPage *DumpRenderTree::createWindow()
 {
+    statcountersMeasureScope("DumpRenderTree::createWindow()");
     if (!m_jscController->canOpenWindows())
         return 0;
 
