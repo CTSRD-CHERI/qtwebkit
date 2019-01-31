@@ -1355,16 +1355,16 @@ inline void CodeBlockSet::mark(const LockHolder& locker, void* candidateCodeBloc
 {
     ASSERT(m_lock.isLocked());
     // We have to check for 0 and -1 because those are used by the HashMap as markers.
+#ifdef __CHERI_PURE_CAPABILITY__
+    vaddr_t value = (__cheri_addr vaddr_t)candidateCodeBlock;
+#else
     uintptr_t value = reinterpret_cast<uintptr_t>(candidateCodeBlock);
+#endif
     
     // This checks for both of those nasty cases in one go.
     // 0 + 1 = 1
     // -1 + 1 = 0
-#ifdef __CHERI_PURE_CAPABILITY__
-    if ((vaddr_t)(void*)value + 1 <= 1)
-#else
     if (value + 1 <= 1)
-#endif
         return;
 
     CodeBlock* codeBlock = static_cast<CodeBlock*>(candidateCodeBlock); 
