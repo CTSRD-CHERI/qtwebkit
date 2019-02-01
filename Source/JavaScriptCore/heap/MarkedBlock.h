@@ -190,6 +190,7 @@ namespace JSC {
         
         MarkedBlock* m_prev;
         MarkedBlock* m_next;
+        bool m_needsDestruction;
 
         size_t m_atomsPerCell;
         size_t m_endAtom; // This is a fuzzy end. Always test for < m_endAtom.
@@ -201,7 +202,6 @@ namespace JSC {
         std::unique_ptr<WTF::Bitmap<atomsPerBlock>> m_newlyAllocated;
 
         size_t m_capacity;
-        bool m_needsDestruction;
         MarkedAllocator* m_allocator;
         BlockState m_state;
         WeakSet m_weakSet;
