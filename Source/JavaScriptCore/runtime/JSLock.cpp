@@ -130,7 +130,14 @@ void JSLock::didAcquireLock()
         return;
 
     RELEASE_ASSERT(!m_vm->stackPointerAtVMEntry());
+#ifdef __CHERI_PURE_CAPABILITY__
+    // TODO: we could reuse the existing approach but then we need to be sure
+    // to only compare virtual addresses since the pointer arithmentic performed
+    // on p will currently cause it to become unrepresentable
+    void* p = __builtin_cheri_stack_get();
+#else
     void* p = &p; // A proxy for the current stack pointer.
+#endif
     m_vm->setStackPointerAtVMEntry(p);
 
     WTFThreadData& threadData = wtfThreadData();
