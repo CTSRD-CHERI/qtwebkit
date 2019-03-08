@@ -328,6 +328,9 @@ void WTFCrash()
         globalHook();
 
     WTFReportBacktrace();
+#ifdef __CHERI_PURE_CAPABILITY__
+    abort(); // gives a sensible core dump with a backtrace
+#endif
     *(int *)(uintptr_t)0xbbadbeef = 0;
     // More reliable, but doesn't say BBADBEEF.
 #if COMPILER(GCC_OR_CLANG)
