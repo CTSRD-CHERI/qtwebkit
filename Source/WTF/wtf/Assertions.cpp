@@ -68,7 +68,7 @@
 #include <unistd.h>
 #endif
 
-#if OS(DARWIN) || (OS(LINUX) && defined(__GLIBC__) && !defined(__UCLIBC__))
+#if OS(DARWIN) || (OS(LINUX) && defined(__GLIBC__) && !defined(__UCLIBC__)) || OS(FREEBSD)
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
@@ -230,7 +230,7 @@ void WTFReportArgumentAssertionFailure(const char* file, int line, const char* f
 
 void WTFGetBacktrace(void** stack, int* size)
 {
-#if OS(DARWIN) || (OS(LINUX) && defined(__GLIBC__) && !defined(__UCLIBC__))
+#if OS(DARWIN) || (OS(LINUX) && defined(__GLIBC__) && !defined(__UCLIBC__)) || OS(FREEBSD)
     *size = backtrace(stack, *size);
 #elif OS(WINDOWS)
     // The CaptureStackBackTrace function is available in XP, but it is not defined
@@ -264,9 +264,11 @@ void WTFReportBacktrace()
     WTFPrintBacktrace(samples + framesToSkip, frames - framesToSkip);
 }
 
-#if OS(DARWIN) || OS(LINUX)
+#if OS(DARWIN) || OS(LINUX) || OS(FREEBSD)
 #  if PLATFORM(QT) || PLATFORM(GTK)
 #    if defined(__GLIBC__) && !defined(__UCLIBC__)
+#      define USE_BACKTRACE_SYMBOLS 1
+#    elif OS(FREEBSD)
 #      define USE_BACKTRACE_SYMBOLS 1
 #    endif
 #  else
@@ -280,6 +282,8 @@ void WTFPrintBacktrace(void** stack, int size)
     char** symbols = backtrace_symbols(stack, size);
     if (!symbols)
         return;
+#else
+#error should use BACKTRACE_SYMBOLS!
 #endif
 
     for (int i = 0; i < size; ++i) {
