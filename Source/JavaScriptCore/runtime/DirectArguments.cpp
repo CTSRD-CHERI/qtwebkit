@@ -179,7 +179,7 @@ unsigned DirectArguments::overridesSize()
     // still allocate so that m_overrides is non-null. We use that to indicate that the other properties
     // (length, etc) are overridden.
 #ifdef __CHERI_PURE_CAPABILITY__
-    return WTF::roundUpToMultipleOf<_MIPS_SZCAP/8>(m_length ? m_length : 1);
+    return WTF::roundUpToMultipleOf<sizeof(__uintcap_t)>(m_length ? m_length : 1);
 #else
     return WTF::roundUpToMultipleOf<8>(m_length ? m_length : 1);
 #endif

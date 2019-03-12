@@ -60,7 +60,7 @@ template <typename T> struct ContiguousData {
         //XXXKG: each element needs to be capability-sized so that the
         //       conversion to contiguous (e.g. see
         //       JSObject::convertDoubleToContiguous) works
-        return (T&)*((int8_t*)m_data + index*(_MIPS_SZCAP/8));
+        return (T&)*((int8_t*)m_data + index*sizeof(__uintcap_t));
 #else
         return m_data[index];
 #endif
@@ -71,7 +71,7 @@ template <typename T> struct ContiguousData {
         //XXXKG: each element needs to be capability-sized so that the
         //       conversion to contiguous (e.g. see
         //       JSObject::convertDoubleToContiguous) works
-        return (T&)*((int8_t*)m_data + index*(_MIPS_SZCAP/8));
+        return (T&)*((int8_t*)m_data + index*sizeof(__uintcap_t));
 #else
         return m_data[index];
 #endif

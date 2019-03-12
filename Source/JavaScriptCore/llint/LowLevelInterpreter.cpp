@@ -165,7 +165,7 @@ struct CLoopRegister {
 #if CPU(BIG_ENDIAN)
         struct {
 #ifdef __CHERI_PURE_CAPABILITY__
-            int32_t i32padding[(_MIPS_SZCAP/32)-1];
+            int32_t i32padding[sizeof(__uintcap_t) / sizeof(int32_t) - 1];
 #else
             int32_t i32padding;
 #endif
@@ -173,7 +173,7 @@ struct CLoopRegister {
         };
         struct {
 #ifdef __CHERI_PURE_CAPABILITY__
-            uint32_t u32padding[(_MIPS_SZCAP/32)-1];
+            uint32_t u32padding[sizeof(__uintcap_t) / sizeof(uint32_t) - 1];
 #else
             uint32_t u32padding;
 #endif
@@ -181,7 +181,7 @@ struct CLoopRegister {
         };
         struct {
 #ifdef __CHERI_PURE_CAPABILITY__
-            int8_t i8padding[(_MIPS_SZCAP/8)-1];
+            int8_t i8padding[sizeof(__uintcap_t) / sizeof(int8_t) - 1];
 #else
             int8_t i8padding[7];
 #endif
@@ -189,7 +189,7 @@ struct CLoopRegister {
         };
         struct {
 #ifdef __CHERI_PURE_CAPABILITY__
-            uint8_t u8padding[(_MIPS_SZCAP/8)-1];
+            uint8_t u8padding[sizeof(__uintcap_t) / sizeof(uint8_t) - 1];
 #else
             uint8_t u8padding[7];
 #endif
@@ -268,7 +268,7 @@ struct CLoopRegister {
 #if USE(JSVALUE64)
 #ifdef __CHERI_PURE_CAPABILITY__
     inline void clearHighWord() {
-        for (int i=0; i<(_MIPS_SZCAP/32)-1; i++)
+        for (int i=0; i<(sizeof(__uintcap_t) / sizeof(int32_t) - 1); i++)
             i32padding[i] = 0;
     }
 #else

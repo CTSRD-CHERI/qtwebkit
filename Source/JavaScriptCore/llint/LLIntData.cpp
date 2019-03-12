@@ -76,7 +76,7 @@ void Data::performAssertions(VM& vm)
 
 #if USE(JSVALUE64)
 #ifdef __CHERI_PURE_CAPABILITY__
-    const ptrdiff_t PtrSize = _MIPS_SZCAP / 8;
+    const ptrdiff_t PtrSize = sizeof(__uintcap_t);
 #else
     const ptrdiff_t PtrSize = 8;
 #endif // __CHERI_PURE_CAPABILITY__
@@ -86,7 +86,7 @@ void Data::performAssertions(VM& vm)
     const ptrdiff_t CallFrameHeaderSlots = 4;
 #endif
 #ifdef __CHERI_PURE_CAPABILITY__
-    const ptrdiff_t SlotSize = _MIPS_SZCAP / 8;
+    const ptrdiff_t SlotSize = sizeof(__uintcap_t);
 #else
     const ptrdiff_t SlotSize = 8;
 #endif // __CHERI_PURE_CAPABILITY
@@ -109,7 +109,7 @@ void Data::performAssertions(VM& vm)
 #if CPU(BIG_ENDIAN)
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.tag) == 0);
 #ifdef __CHERI_PURE_CAPABILITY__
-    ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.payload) == ((_MIPS_SZCAP/8)-4));
+    ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.payload) == (sizeof(__uintcap_t)-4));
 #else
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.payload) == 4);
 #endif

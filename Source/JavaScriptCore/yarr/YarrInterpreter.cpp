@@ -107,7 +107,7 @@ public:
     {
         size_t size = sizeof(DisjunctionContext) - sizeof(uintptr_t) + disjunction->m_frameSize * sizeof(uintptr_t);
 #ifdef __CHERI_PURE_CAPABILITY__
-        size = WTF::roundUpToMultipleOf<_MIPS_SZCAP/8>(size);
+        size = WTF::roundUpToMultipleOf<sizeof(__uintcap_t)>(size);
 #endif
         allocatorPool = allocatorPool->ensureCapacity(size);
         RELEASE_ASSERT(allocatorPool);
@@ -150,7 +150,7 @@ public:
         {
             DisjunctionContext* context = reinterpret_cast<DisjunctionContext*>(&(subpatternBackup[term.atom.parenthesesDisjunction->m_numSubpatterns << 1]));
 #ifdef __CHERI_PURE_CAPABILITY__
-            return __builtin_align_up(context, _MIPS_SZCAP/8);
+            return __builtin_align_up(context, sizeof(__uintcap_t));
 #else
             return context;
 #endif
@@ -164,7 +164,7 @@ public:
     {
         size_t size = sizeof(ParenthesesDisjunctionContext) - sizeof(unsigned) + (term.atom.parenthesesDisjunction->m_numSubpatterns << 1) * sizeof(unsigned) + sizeof(DisjunctionContext) - sizeof(uintptr_t) + static_cast<size_t>(disjunction->m_frameSize) * sizeof(uintptr_t);
 #ifdef __CHERI_PURE_CAPABILITY__
-        size = WTF::roundUpToMultipleOf<_MIPS_SZCAP/8>(size);
+        size = WTF::roundUpToMultipleOf<sizeof(__uintcap_t)>(size);
 #endif
         allocatorPool = allocatorPool->ensureCapacity(size);
         RELEASE_ASSERT(allocatorPool);

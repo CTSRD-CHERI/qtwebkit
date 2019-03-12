@@ -119,7 +119,7 @@ static const size_t MB = 1024 * 1024;
 inline bool isPointerAligned(void* p)
 {
 #ifdef __CHERI_PURE_CAPABILITY__
-    return __builtin_is_aligned(p, _MIPS_SZCAP/8);
+    return __builtin_is_aligned(p, sizeof(__uintptr_t));
 #else
     return !((intptr_t)(p) & (sizeof(char*) - 1));
 #endif
