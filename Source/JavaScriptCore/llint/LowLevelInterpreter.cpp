@@ -198,19 +198,35 @@ struct CLoopRegister {
 #else // !CPU(BIG_ENDIAN)
         struct {
             int32_t i32;
+#ifdef __CHERI_PURE_CAPABILITY__
+            int32_t i32padding[sizeof(__uintcap_t) / sizeof(int32_t) - 1];
+#else
             int32_t i32padding;
+#endif
         };
         struct {
             uint32_t u32;
+#ifdef __CHERI_PURE_CAPABILITY__
+            uint32_t u32padding[sizeof(__uintcap_t) / sizeof(uint32_t) - 1];
+#else
             uint32_t u32padding;
+#endif
         };
         struct {
             int8_t i8;
+#ifdef __CHERI_PURE_CAPABILITY__
+            int8_t i8padding[sizeof(__uintcap_t) / sizeof(int8_t) - 1];
+#else
             int8_t i8padding[7];
+#endif
         };
         struct {
             uint8_t u8;
+#ifdef __CHERI_PURE_CAPABILITY__
+            uint8_t u8padding[sizeof(__uintcap_t) / sizeof(uint8_t) - 1];
+#else
             uint8_t u8padding[7];
+#endif
         };
 #endif // !CPU(BIG_ENDIAN)
 #else // !USE(JSVALUE64)
