@@ -112,6 +112,7 @@ void StackBounds::initialize()
     ASSERT(stackBase);
 #ifdef __CHERI_PURE_CAPABILITY__
     ASSERT((vaddr_t)stackBase < (vaddr_t)__builtin_cheri_base_get(__builtin_cheri_stack_get()));
+    RELEASE_ASSERT((vaddr_t)stackBase <= (vaddr_t)__builtin_cheri_base_get(__builtin_cheri_stack_get()));
 #endif
     pthread_attr_destroy(&sattr);
     m_bound = stackBase;
