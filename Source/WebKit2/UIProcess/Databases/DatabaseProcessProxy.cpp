@@ -135,6 +135,8 @@ void DatabaseProcessProxy::didClose(IPC::Connection&)
 
 #if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
         reply->send(IPC::Attachment());
+#elif USE(PROCESS_COLOCATION_IPC)
+        //todo-PBB: implement
 #elif OS(DARWIN)
         reply->send(IPC::Attachment(0, MACH_MSG_TYPE_MOVE_SEND));
 #else
@@ -170,6 +172,8 @@ void DatabaseProcessProxy::didCreateDatabaseToWebProcessConnection(const IPC::At
 
 #if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
     reply->send(connectionIdentifier);
+#elif USE(PROCESS_COLOCATION_IPC)
+    //todo-PBB:implement
 #elif OS(DARWIN)
     reply->send(IPC::Attachment(connectionIdentifier.port(), MACH_MSG_TYPE_MOVE_SEND));
 #else

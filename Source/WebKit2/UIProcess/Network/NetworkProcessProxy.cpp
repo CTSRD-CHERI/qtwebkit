@@ -169,6 +169,8 @@ void NetworkProcessProxy::networkProcessCrashedOrFailedToLaunch()
 
 #if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
         reply->send(IPC::Attachment());
+#elif USE(PROCESS_COLOCATION_IPC)
+    //todo-PBB:implement
 #elif OS(DARWIN)
         reply->send(IPC::Attachment(0, MACH_MSG_TYPE_MOVE_SEND));
 #else
@@ -235,6 +237,8 @@ void NetworkProcessProxy::didCreateNetworkConnectionToWebProcess(const IPC::Atta
 
 #if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
     reply->send(connectionIdentifier);
+#elif USE(PROCESS_COLOCATION_IPC)
+    //todo-PBB:implement
 #elif OS(DARWIN)
     reply->send(IPC::Attachment(connectionIdentifier.port(), MACH_MSG_TYPE_MOVE_SEND));
 #else

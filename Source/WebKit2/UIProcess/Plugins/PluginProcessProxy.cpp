@@ -159,6 +159,8 @@ void PluginProcessProxy::pluginProcessCrashedOrFailedToLaunch()
 
 #if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
         reply->send(IPC::Attachment(), false);
+#elif USE(PROCESS_COLOCATION_IPC)
+    //todo-PBB:implement
 #elif OS(DARWIN)
         reply->send(IPC::Attachment(0, MACH_MSG_TYPE_MOVE_SEND), false);
 #else
@@ -219,7 +221,7 @@ void PluginProcessProxy::didFinishLaunching(ProcessLauncher*, IPC::Connection::I
     m_connection = IPC::Connection::createServerConnection(connectionIdentifier, *this);
 #if (PLATFORM(MAC) || PLATFORM(QT) && USE(MACH_PORTS)) && __MAC_OS_X_VERSION_MIN_REQUIRED <= 101000
     m_connection->setShouldCloseConnectionOnMachExceptions();
-#elif PLATFORM(QT) && USE(UNIX_DOMAIN_SOCKETS)
+#elif PLATFORM(QT) && ( USE(UNIX_DOMAIN_SOCKETS) || USE(PROCESS_COLOCATION_IPC) )
     m_connection->setShouldCloseConnectionOnProcessTermination(processIdentifier());
 #endif
 
@@ -275,6 +277,8 @@ void PluginProcessProxy::didCreateWebProcessConnection(const IPC::Attachment& co
 
 #if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
     reply->send(connectionIdentifier, supportsAsynchronousPluginInitialization);
+#elif USE(PROCESS_COLOCATION_IPC)
+    //todo-PBB:implement
 #elif OS(DARWIN)
     reply->send(IPC::Attachment(connectionIdentifier.port(), MACH_MSG_TYPE_MOVE_SEND), supportsAsynchronousPluginInitialization);
 #else

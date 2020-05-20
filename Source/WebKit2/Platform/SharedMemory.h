@@ -77,11 +77,8 @@ public:
 #endif
     private:
         friend class SharedMemory;
-#if USE(UNIX_DOMAIN_SOCKETS)
+#if USE(UNIX_DOMAIN_SOCKETS) || USE(PROCESS_COLOCATION_IPC)
         mutable IPC::Attachment m_attachment;
-#elif USE(PROCESS_COLOCATION_IPC)
-        mutable IPC::Attachment m_attachment;
-        size_t m_size;
 #elif OS(DARWIN)
         mutable mach_port_t m_port;
         size_t m_size;

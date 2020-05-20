@@ -239,6 +239,8 @@ void NetworkProcess::createNetworkConnectionToWebProcess()
 
     IPC::Attachment clientSocket(socketPair.client);
     parentProcessConnection()->send(Messages::NetworkProcessProxy::DidCreateNetworkConnectionToWebProcess(clientSocket), 0);
+#elif USE(PROCESS_COLOCATION_IPC)
+    //TODO-PBB: IMPLEMENT
 #elif OS(WINDOWS)
     IPC::Connection::Identifier serverIdentifier, clientIdentifier;
     if (!IPC::Connection::createServerAndClientIdentifiers(serverIdentifier, clientIdentifier)) {

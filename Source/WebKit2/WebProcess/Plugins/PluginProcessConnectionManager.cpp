@@ -76,6 +76,8 @@ PluginProcessConnection* PluginProcessConnectionManager::getPluginProcessConnect
 
 #if USE(UNIX_DOMAIN_SOCKETS)
     IPC::Connection::Identifier connectionIdentifier = encodedConnectionIdentifier.releaseFileDescriptor();
+#elif USE(PROCESS_COLOCATION_IPC)
+    //todo-PBB:implement
 #elif OS(DARWIN)
     IPC::Connection::Identifier connectionIdentifier(encodedConnectionIdentifier.port());
 #elif OS(WINDOWS)

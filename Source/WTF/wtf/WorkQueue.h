@@ -46,13 +46,15 @@
 #include <DispatchQueueEfl.h>
 #elif PLATFORM(QT) && USE(UNIX_DOMAIN_SOCKETS)
 #include <QSocketNotifier>
+#elif PLATFORM(QT) && USE(PROCESS_COLOCATION_IPC)
+#include <QCoportNotifier>
 #elif OS(WINDOWS)
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>
 #include <wtf/win/WorkItemWin.h>
 #endif
 
-#if PLATFORM(QT) && USE(UNIX_DOMAIN_SOCKETS)
+#if PLATFORM(QT) && ( USE(UNIX_DOMAIN_SOCKETS) || USE(PROCESS_COLOCATION_IPC) )
 QT_BEGIN_NAMESPACE
 class QProcess;
 QT_END_NAMESPACE
@@ -90,6 +92,9 @@ public:
 #elif PLATFORM(QT) && USE(UNIX_DOMAIN_SOCKETS)
     QSocketNotifier* registerSocketEventHandler(int, QSocketNotifier::Type, std::function<void()>);
     void dispatchOnTermination(QProcess*, std::function<void()>);
+#elif PLATFORM(QT) && USE(PROCESS_COLOCATION_IPC)
+    QCoportNotifier* registerCoportEventHandler(int, QCoportNotifier::Type, std::function<void()>);
+    void dispatchOnTermination(QProcess*, std::function<void()>);
 #elif PLATFORM(QT) && OS(WINDOWS)
     void registerHandle(HANDLE, const std::function<void()>&);
     void unregisterAndCloseHandle(HANDLE);
@@ -125,7 +130,7 @@ private:
     Condition m_terminateRunLoopCondition;
 #elif PLATFORM(EFL)
     RefPtr<DispatchQueue> m_dispatchQueue;
-#elif PLATFORM(QT) && USE(UNIX_DOMAIN_SOCKETS)
+#elif PLATFORM(QT) && ( USE(UNIX_DOMAIN_SOCKETS) || USE(PROCESS_COLOCATION_IPC) )
     class WorkItemQt;
     QThread* m_workThread;
     friend class WorkItemQt;

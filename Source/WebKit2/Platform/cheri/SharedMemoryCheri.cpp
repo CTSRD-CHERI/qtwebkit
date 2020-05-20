@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#if USE(UNIX_DOMAIN_SOCKETS)
+#if USE(PROCESS_COLOCATION_IPC)
 #include "SharedMemory.h"
 
 #include "ArgumentDecoder.h"
@@ -103,7 +103,6 @@ RefPtr<SharedMemory> SharedMemory::allocate(size_t size)
 
     RefPtr<SharedMemory> instance = adoptRef(new SharedMemory());
     instance->m_data = data;
-    instance->m_size = size;
     return instance.release();
 }
 
@@ -141,7 +140,6 @@ RefPtr<SharedMemory> SharedMemory::wrapMap(void __capability * data)
 {
     RefPtr<SharedMemory> instance = adoptRef(new SharedMemory());
     instance->m_data = data;
-    instance->m_size = cheri_getlen(data);
     instance->m_isWrappingMap = true;
     return instance;
 }
@@ -150,8 +148,8 @@ SharedMemory::~SharedMemory()
 {
     if (m_isWrappingMap)
         return;
-
-    comunmap(m_data, m_size);
+m_data
+    comunmap(m_data, cheri_getlen(m_data));
 }
 
 bool SharedMemory::createHandle(Handle& handle, Protection)
@@ -159,9 +157,8 @@ bool SharedMemory::createHandle(Handle& handle, Protection)
     ASSERT_ARG(handle, handle.isNull());
     ASSERT(m_data);
     ASSERT(cheri_gettag(m_data));
-    ASSERT(cheri_getlen(m_data)>=m_size);
 
-    handle.m_attachment = IPC::Attachment(m_data, m_size);
+    handle.m_attachment = IPC::Attachment(m_data, cheri_getlen(m_data));
 
     return true;
 }
