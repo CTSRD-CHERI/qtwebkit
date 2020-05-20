@@ -159,8 +159,10 @@ bool SharedMemory::createHandle(Handle& handle, Protection)
     ASSERT_ARG(handle, handle.isNull());
     ASSERT(m_data);
     ASSERT(cheri_gettag(m_data));
+    ASSERT(cheri_getlen(m_data)>=m_size);
 
     handle.m_attachment = IPC::Attachment(m_data, m_size);
+
     return true;
 }
 

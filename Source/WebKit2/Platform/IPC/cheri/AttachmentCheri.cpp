@@ -69,5 +69,31 @@ Attachment::~Attachment()
         comunmap(m_cap);
 }
 
+#if 0
+void Attachment::encode(ArgumentEncoder& encoder) const
+{
+
+    encoder << m_cap;
+    encoder << m_type;
+}
+
+bool Attachment::decode(ArgumentDecoder& decoder, Attachment& attachment)
+{
+    ASSERT_ARG(attachment, !attachment.m_handle);
+
+    void * __capability sourceCap;
+    if (!decoder.decode(sourceHandle))
+        return false;
+
+    Type sourceType;
+    if (!decoder.decode(sourceType))
+        return false;
+
+    attachment.m_cap = sourceCap;
+    attachment.m_type = sourceType
+
+    return true;
+}
+#endif
 
 } // namespace IPC

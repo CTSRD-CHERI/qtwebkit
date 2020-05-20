@@ -185,6 +185,12 @@ void ArgumentEncoder::encode(double n)
     copyValueToBuffer(n, buffer);
 }
 
+void ArgumentEncoder::encode(void * __capability n)
+    uint8_t* buffer = grow(sizeof(n), sizeof(n));
+    copyValueToBuffer(n, buffer);
+}
+
+
 void ArgumentEncoder::addAttachment(Attachment&& attachment)
 {
     m_attachments.append(WTFMove(attachment));

@@ -89,6 +89,7 @@ public:
     //ComesgPortType
     //CoMappedMemoryType
     void * __capability cap() const { return m_cap; }
+    void * __capability releaseCapability() { void * __capability temp = m_cap; m_cap = -1; return temp; }
 #elif OS(DARWIN)
     void release();
 
@@ -109,7 +110,7 @@ private:
     int m_fileDescriptor { -1 };
     size_t m_size;
 #elif USE(PROCESS_COLOCATION_IPC)
-    coport_t m_coport;
+    void * __capability m_cap;
 #elif OS(DARWIN)
     mach_port_name_t m_port;
     mach_msg_type_name_t m_disposition;

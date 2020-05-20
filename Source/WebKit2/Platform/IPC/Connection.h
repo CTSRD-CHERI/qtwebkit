@@ -148,9 +148,27 @@ public:
         {
         }
 
+        Identifier(named_coport_t nport)
+            : coport(nport.port)
+            , coport_name(nport.name)
+        {
+        }
+
         coport_t coport;
+        char coport_name[COPORT_NAME_LEN];
     };
+
+    struct CoportPair {
+        coport_t localCoport;
+        coport_t remoteCoport;
+    };
+    struct CoportConnectionPair {
+        CoportPair client;
+        CoportPair server;
+    };
+    static Connection::CoportConnectionPair createPlatformConnection(unsigned options = 0);
 #elif OS(DARWIN)
+   
     struct Identifier {
         Identifier()
             : port(MACH_PORT_NULL)
@@ -378,17 +396,12 @@ private:
     QSocketNotifier* m_socketNotifier;
 #endif //PLATFORM(QT)
 #elif USE(PROCESS_COLOCATION_IPC)
-    //UNIMPLEMENTED COLOCATION IPC
-    coport_t m_sendCoport;
-    StringReference m_sendCoportName;
-    StringReference m_coportName;
-
-    coport_t m_receiveCoport;
-    StringReference m_receiveCoportName;
+    named_coport_t m_remoteCoport; //coport for servers to send messages to
+    named_coport_t m_localCoport; //coport for clients to receive messages on
 #if PLATFORM(QT)
     QCoportNotifier* m_coportNotifier;
 #endif
-
+    void * __capability m_readBuffer[1024]; //buffer for received messages
 #elif OS(DARWIN)
     // Called on the connection queue.
     void receiveSourceEventHandler();
