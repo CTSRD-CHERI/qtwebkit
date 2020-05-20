@@ -158,6 +158,8 @@ void ProcessLauncher::launchProcess()
     commandLine = commandLine.arg(qulonglong(clientIdentifier));
     // Ensure that the child process inherits the client identifier.
     ::SetHandleInformation(clientIdentifier, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+#elif USE(PROCESS_COLOCATION_IPC)
+    //TODO-PBB: DOSTUFF
 #else
     int sockets[2];
     if (socketpair(AF_UNIX, SOCKET_TYPE, 0, sockets) == -1) {

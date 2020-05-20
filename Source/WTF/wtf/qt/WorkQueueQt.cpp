@@ -93,6 +93,19 @@ QSocketNotifier* WorkQueue::registerSocketEventHandler(int socketDescriptor, QSo
     return notifier;
 }
 
+QCoportNotifier* WorkQueue::registerCoportEventHandler(coport_t port, QCoportNotifier::Type type, std::function<void()> function)
+{
+    ASSERT(m_workThread);
+
+    QCoportNotifier* notifier = new QCoportNotifier(port, type, 0);
+    notifier->setEnabled(false);
+    notifier->moveToThread(m_workThread);
+    WorkQueue::WorkItemQt* itemQt = new WorkQueue::WorkItemQt(this, notifier, SIGNAL(activated(int)), function);
+    itemQt->moveToThread(m_workThread);
+    QMetaObject::invokeMethod(notifier, "setEnabled", Q_ARG(bool, true));
+    return notifier;
+}
+
 void WorkQueue::platformInitialize(const char*, Type, QOS)
 {
     m_workThread = new QThread();

@@ -22,56 +22,52 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+//TODO-PBB:COPORT LICENSE 
 
-#include "config.h"
-#include "Attachment.h"
+#ifndef COMESG_PORT_H
+#define COMESG_PORT_H
 
 #include "ArgumentDecoder.h"
 #include "ArgumentEncoder.h"
+#include "Attachment.h"
+
+#define COPORT_NULL NULL
 
 namespace IPC {
 
-Attachment::Attachment()
-    : m_type(Uninitialized)
-#if OS(WINDOWS)
-    , m_handle(0)
-#endif
-{
-}
+class ComesgPort {
+public:
+    ComesgPort()
+        : m_coport(NULL)
+    {
+    }
 
-#if OS(DARWIN) && !USE(UNIX_DOMAIN_SOCKETS)
-Attachment::Attachment(mach_port_name_t port, mach_msg_type_name_t disposition)
-    : m_type(MachPortType)
-    , m_port(port)
-    , m_disposition(disposition)
-{
-}
-#elif USE(PROCESS_COLOCATION_IPC)
-/* UNIMPLEMENTED-COMESG do stuff */
-Attachment::Attachment(coport_t coport)
-    : m_type(CoportType)
-    , m_coport(coport)
-{
-}
+    ComesgPort(coport_t coport)
+        : m_coport(coport)
+    {
+    }
 
-void Attachment::release()
-{
-    m_type = Uninitialized;
-}
-#endif
+    void encode(ArgumentEncoder& encoder) const
+    {
+        encoder << Attachment(m_coport);
+    }
 
-#if !OS(WINDOWS)
-void Attachment::encode(ArgumentEncoder& encoder) const
-{
-    encoder.addAttachment(WTFMove(*const_cast<Attachment*>(this)));
-}
+    static bool decode(ArgumentDecoder& decoder, ComesgPort& p)
+    {
+        Attachment attachment;
+        if (!decoder.decode(attachment))
+            return false;
+        
+        p.m_coport = attachment.coport();
+        return true;
+    }
 
-bool Attachment::decode(ArgumentDecoder& decoder, Attachment& attachment)
-{
-    if (!decoder.removeAttachment(attachment))
-        return false;
-    return true;
-}
-#endif
+    coport_t coport() const { return m_coport; }
+
+private:
+    coport_t m_coport;
+};
 
 } // namespace IPC
+
+#endif // COMESG_PORT_H

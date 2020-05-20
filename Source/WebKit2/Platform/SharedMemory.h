@@ -72,11 +72,16 @@ public:
 #if USE(UNIX_DOMAIN_SOCKETS)
         IPC::Attachment releaseAttachment() const;
         void adoptAttachment(IPC::Attachment&&);
+#elif USE(PROCESS_COLOCATION_IPC)
+        size_t size() { return cheri_getlen(m_cap); }
 #endif
     private:
         friend class SharedMemory;
 #if USE(UNIX_DOMAIN_SOCKETS)
         mutable IPC::Attachment m_attachment;
+#elif USE(PROCESS_COLOCATION_IPC)
+        mutable IPC::Attachment m_attachment;
+        size_t m_size;
 #elif OS(DARWIN)
         mutable mach_port_t m_port;
         size_t m_size;
@@ -89,8 +94,10 @@ public:
     static RefPtr<SharedMemory> allocate(size_t);
     static RefPtr<SharedMemory> create(void*, size_t, Protection);
     static RefPtr<SharedMemory> map(const Handle&, Protection);
-#if USE(UNIX_DOMAIN_SOCKETS)
+#if USE(UNIX_DOMAIN_SOCKETS) 
     static RefPtr<SharedMemory> wrapMap(void*, size_t, int fileDescriptor);
+#elif USE(PROCESS_COLOCATION_IPC)
+    static RefPtr<SharedMemory> wrapMap(void*);
 #endif
 
 #if OS(WINDOWS)
@@ -125,6 +132,8 @@ private:
 
 #if USE(UNIX_DOMAIN_SOCKETS)
     Optional<int> m_fileDescriptor;
+    bool m_isWrappingMap { false };
+#elif USE(PROCESS_COLOCATION_IPC)
     bool m_isWrappingMap { false };
 #elif OS(DARWIN)
     mach_port_t m_port;

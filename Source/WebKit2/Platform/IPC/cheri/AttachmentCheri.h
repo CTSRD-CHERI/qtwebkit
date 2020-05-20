@@ -48,12 +48,7 @@ public:
         SocketType,
         MappedMemoryType,
 #elif USE(PROCESS_COLOCATION_IPC)
-        CoMappedMemoryType,
         CoportType,
-    #ifdef DEBUG_COLOCATION_IPC
-        SocketType,
-        MappedMemoryType,
-    #endif
 #elif OS(DARWIN)
         MachPortType
 #endif
@@ -64,11 +59,6 @@ public:
     Attachment& operator=(Attachment&&);
     Attachment(int fileDescriptor, size_t);
     Attachment(int fileDescriptor);
-    ~Attachment();
-#elif USE(PROCESS_COLOCATION_IPC)
-    Attachment(Attachment&&);
-    Attachment& operator=(Attachment&&);
-    Attachment(coport_t port);
     ~Attachment();
 #elif OS(DARWIN)
     Attachment(mach_port_name_t, mach_msg_type_name_t disposition);
@@ -86,9 +76,10 @@ public:
     int releaseFileDescriptor() { int temp = m_fileDescriptor; m_fileDescriptor = -1; return temp; }
     int fileDescriptor() const { return m_fileDescriptor; }
 #elif USE(PROCESS_COLOCATION_IPC)
-    //ComesgPortType
-    //CoMappedMemoryType
+
+    // ComesgPortType
     void * __capability cap() const { return m_cap; }
+    void * __capability releaseCapability() { void * __capability temp = m_cap; m_cap = -1; return temp; }
 #elif OS(DARWIN)
     void release();
 

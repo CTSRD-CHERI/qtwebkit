@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (c) 2020 Peter S. Blandford-Baker
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,55 +25,49 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+//#include "config.h"
 #include "Attachment.h"
-
-#include "ArgumentDecoder.h"
-#include "ArgumentEncoder.h"
+#include <cheri/coport.h>
 
 namespace IPC {
 
-Attachment::Attachment()
-    : m_type(Uninitialized)
-#if OS(WINDOWS)
-    , m_handle(0)
-#endif
-{
-}
-
-#if OS(DARWIN) && !USE(UNIX_DOMAIN_SOCKETS)
-Attachment::Attachment(mach_port_name_t port, mach_msg_type_name_t disposition)
-    : m_type(MachPortType)
-    , m_port(port)
-    , m_disposition(disposition)
-{
-}
-#elif USE(PROCESS_COLOCATION_IPC)
-/* UNIMPLEMENTED-COMESG do stuff */
-Attachment::Attachment(coport_t coport)
+Attachment::Attachment(coport_t port)
     : m_type(CoportType)
-    , m_coport(coport)
+    , m_cap(port)
 {
 }
 
-void Attachment::release()
+Attachment::Attachment(void * __capability cap)
+    : m_type(CoMappedMemoryType)
+    , m_cap(cap)
 {
-    m_type = Uninitialized;
-}
-#endif
-
-#if !OS(WINDOWS)
-void Attachment::encode(ArgumentEncoder& encoder) const
-{
-    encoder.addAttachment(WTFMove(*const_cast<Attachment*>(this)));
 }
 
-bool Attachment::decode(ArgumentDecoder& decoder, Attachment& attachment)
+Attachment::Attachment(Attachment&& attachment)
+    : m_type(attachment.m_type)
+    , m_port(attachment.m_cap)
 {
-    if (!decoder.removeAttachment(attachment))
-        return false;
-    return true;
+    attachment.m_type = Uninitialized;
+    attachment.m_cap = NULL;
 }
-#endif
+
+Attachment& Attachment::operator=(Attachment&& attachment)
+{
+    m_type = attachment.m_type;
+    attachment.m_type = Uninitialized;
+    m_cap = attachment.m_cap;
+    attachment.m_cap = NULL;
+
+    return *this;
+}
+
+Attachment::~Attachment()
+{
+    if (m_type == CoportType)
+        coclose(m_cap);
+    else if (m_type == CoMappedMemoryType)
+        comunmap(m_cap);
+}
+
 
 } // namespace IPC

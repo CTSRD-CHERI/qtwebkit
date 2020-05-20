@@ -151,6 +151,6 @@ void WorkQueue::concurrentApply(size_t iterations, const std::function<void (siz
     LockHolder holder(lock);
     condition.wait(lock, [&] { return !activeThreads; });
 }
-#endif
+#endif // !PLATFORM(COCOA) && !(PLATFORM(QT) && OS(DARWIN))
 
 }

@@ -48,6 +48,10 @@
 #include <wtf/spi/darwin/XPCSPI.h>
 #endif
 
+#if USE(PROCESS_COLOCATION_IPC)
+#include <comesg/coport.h>
+#endif
+
 #if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL)
 #include "PlatformProcessIdentifier.h"
 #endif
@@ -59,6 +63,7 @@
 #if PLATFORM(QT)
 QT_BEGIN_NAMESPACE
 class QSocketNotifier;
+class QCoportNotifier;
 QT_END_NAMESPACE
 #endif
 
@@ -122,6 +127,29 @@ public:
     };
 
     static Connection::SocketPair createPlatformConnection(unsigned options = SetCloexecOnClient | SetCloexecOnServer);
+#elif USE(PROCESS_COLOCATION_IPC)
+    /* UNIMPLEMENTED-COMESG do stuff */
+    struct Identifier {
+        Identifier()
+            : coport_name(NULL)
+            , coport(NULL)
+        {
+        }
+
+        Identifier(StringReference coport_name)
+            : coport_name(coport_name)
+            , coport(NULL)
+        {
+        }
+
+        Identifier(Coport_t port)
+            : coport(port)
+            , coport_name(NULL)
+        {
+        }
+
+        coport_t coport;
+    };
 #elif OS(DARWIN)
     struct Identifier {
         Identifier()
@@ -345,10 +373,22 @@ private:
     int m_socketDescriptor;
 #if PLATFORM(GTK)
     GSocketMonitor m_socketMonitor;
-#endif
+#endif //PLATFORM(GTK)
 #if PLATFORM(QT)
     QSocketNotifier* m_socketNotifier;
+#endif //PLATFORM(QT)
+#elif USE(PROCESS_COLOCATION_IPC)
+    //UNIMPLEMENTED COLOCATION IPC
+    coport_t m_sendCoport;
+    StringReference m_sendCoportName;
+    StringReference m_coportName;
+
+    coport_t m_receiveCoport;
+    StringReference m_receiveCoportName;
+#if PLATFORM(QT)
+    QCoportNotifier* m_coportNotifier;
 #endif
+
 #elif OS(DARWIN)
     // Called on the connection queue.
     void receiveSourceEventHandler();
