@@ -165,6 +165,8 @@ public:
     struct CoportConnectionPair {
         CoportPair client;
         CoportPair server;
+        char client_name[COPORT_NAME_LEN];
+        char server_name[COPORT_NAME_LEN];
     };
     static Connection::CoportConnectionPair createPlatformConnection(unsigned options = 0);
 #elif OS(DARWIN)
@@ -396,8 +398,8 @@ private:
     QSocketNotifier* m_socketNotifier;
 #endif //PLATFORM(QT)
 #elif USE(PROCESS_COLOCATION_IPC)
-    named_coport_t m_remoteCoport; //coport for servers to send messages to
-    named_coport_t m_localCoport; //coport for clients to receive messages on
+    named_coport_t m_remoteCoport; //coport to send messages to
+    named_coport_t m_localCoport; //coport to receive messages on
 #if PLATFORM(QT)
     QCoportNotifier* m_coportNotifier;
 #endif

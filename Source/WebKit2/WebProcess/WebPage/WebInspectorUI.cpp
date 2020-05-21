@@ -57,7 +57,7 @@ void WebInspectorUI::establishConnection(IPC::Attachment encodedConnectionIdenti
 #if USE(UNIX_DOMAIN_SOCKETS)
     IPC::Connection::Identifier connectionIdentifier(encodedConnectionIdentifier.releaseFileDescriptor());
 #elif USE(PROCESS_COLOCATION_IPC)
-    //todo-PBB:implement
+    IPC::Connection::Identifier connectionIdentifier(encodedConnectionIdentifier.cap());
 #elif OS(DARWIN)
     IPC::Connection::Identifier connectionIdentifier(encodedConnectionIdentifier.port());
 #elif OS(WINDOWS)

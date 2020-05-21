@@ -176,7 +176,9 @@ void DatabaseProcess::createDatabaseToWebProcessConnection()
     m_databaseToWebProcessConnections.append(DatabaseToWebProcessConnection::create(socketPair.server));
     parentProcessConnection()->send(Messages::DatabaseProcessProxy::DidCreateDatabaseToWebProcessConnection(IPC::Attachment(socketPair.client)), 0);
 #elif USE(PROCESS_COLOCATION_IPC)
-    //TODO-PBB: IMPLEMENT    
+     IPC::Connection::CoportConnectionPair connPair = IPC::Connection::createPlatformConnection();
+     m_databaseToWebProcessConnections.append(DatabaseToWebProcessConnection::create(connPair.server));
+     parentProcessConnection()->send(Messages::DatabaseProcessProxy::DidCreateDatabaseToWebProcessConnection(IPC::Attachment(connPair.client)), 0);
 #elif OS(WINDOWS)
     IPC::Connection::Identifier serverIdentifier, clientIdentifier;
     if (!IPC::Connection::createServerAndClientIdentifiers(serverIdentifier, clientIdentifier)) {

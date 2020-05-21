@@ -77,7 +77,9 @@ void WebInspector::openFrontendConnection(bool underTest)
     IPC::Connection::Identifier connectionIdentifier(socketPair.server);
     IPC::Attachment connectionClientPort(socketPair.client);
 #elif USE(PROCESS_COLOCATION_IPC)
-    //todo-PBB:implement
+    IPC::Connection::CoportConnectionPair connPair = IPC::Connection::createPlatformConnection();
+    IPC::Connection::Identifier connectionIdentifier(connPair.server);
+    IPC::Attachment connectionClientPort(connPair.client);
 #elif OS(WINDOWS)
     IPC::Connection::Identifier connectionIdentifier, clientIdentifier;
     if (!IPC::Connection::createServerAndClientIdentifiers(connectionIdentifier, clientIdentifier)) {

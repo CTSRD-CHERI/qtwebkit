@@ -157,10 +157,8 @@ void PluginProcessProxy::pluginProcessCrashedOrFailedToLaunch()
     while (!m_pendingConnectionReplies.isEmpty()) {
         RefPtr<Messages::WebProcessProxy::GetPluginProcessConnection::DelayedReply> reply = m_pendingConnectionReplies.takeFirst();
 
-#if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
+#if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS) || USE(PROCESS_COLOCATION_IPC)
         reply->send(IPC::Attachment(), false);
-#elif USE(PROCESS_COLOCATION_IPC)
-    //todo-PBB:implement
 #elif OS(DARWIN)
         reply->send(IPC::Attachment(0, MACH_MSG_TYPE_MOVE_SEND), false);
 #else
@@ -275,10 +273,8 @@ void PluginProcessProxy::didCreateWebProcessConnection(const IPC::Attachment& co
     // Grab the first pending connection reply.
     RefPtr<Messages::WebProcessProxy::GetPluginProcessConnection::DelayedReply> reply = m_pendingConnectionReplies.takeFirst();
 
-#if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
+#if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS) || USE(PROCESS_COLOCATION_IPC)
     reply->send(connectionIdentifier, supportsAsynchronousPluginInitialization);
-#elif USE(PROCESS_COLOCATION_IPC)
-    //todo-PBB:implement
 #elif OS(DARWIN)
     reply->send(IPC::Attachment(connectionIdentifier.port(), MACH_MSG_TYPE_MOVE_SEND), supportsAsynchronousPluginInitialization);
 #else

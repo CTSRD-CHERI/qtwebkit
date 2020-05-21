@@ -133,10 +133,8 @@ void DatabaseProcessProxy::didClose(IPC::Connection&)
     while (!m_pendingConnectionReplies.isEmpty()) {
         auto reply = m_pendingConnectionReplies.takeFirst();
 
-#if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
+#if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS) || USE(PROCESS_COLOCATION_IPC)
         reply->send(IPC::Attachment());
-#elif USE(PROCESS_COLOCATION_IPC)
-        //todo-PBB: implement
 #elif OS(DARWIN)
         reply->send(IPC::Attachment(0, MACH_MSG_TYPE_MOVE_SEND));
 #else
@@ -170,10 +168,8 @@ void DatabaseProcessProxy::didCreateDatabaseToWebProcessConnection(const IPC::At
 
     RefPtr<Messages::WebProcessProxy::GetDatabaseProcessConnection::DelayedReply> reply = m_pendingConnectionReplies.takeFirst();
 
-#if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS)
+#if USE(UNIX_DOMAIN_SOCKETS) || OS(WINDOWS) || USE(PROCESS_COLOCATION_IPC)
     reply->send(connectionIdentifier);
-#elif USE(PROCESS_COLOCATION_IPC)
-    //todo-PBB:implement
 #elif OS(DARWIN)
     reply->send(IPC::Attachment(connectionIdentifier.port(), MACH_MSG_TYPE_MOVE_SEND));
 #else

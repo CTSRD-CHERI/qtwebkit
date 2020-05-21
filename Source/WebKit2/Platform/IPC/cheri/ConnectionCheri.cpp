@@ -159,7 +159,7 @@ void Connection::readyReadHandler()
 #endif
     void * __capability msg = NULL;
     while (true) {
-        int corecv_result = corecv(m_localCoport, &msg, sizeof(msg));
+        int corecv_result = corecv(m_localCoport.port, &msg, sizeof(msg));
 
         if (corecv_result < 0) {
             // EINTR was already handled by readBytesFromSocket.
@@ -194,8 +194,11 @@ bool Connection::open()
 
     RefPtr<Connection> protectedThis(this);
     m_isConnected = true;
+    if(!m_localCoport)
+        return;
+
 #if PLATFORM(QT)
-    m_coportNotifier = m_connectionQueue->registerCoportEventHandler(m_localCoport, QCoportNotifier::Read,
+    m_coportNotifier = m_connectionQueue->registerCoportEventHandler(m_localCoport.port, QCoportNotifier::Read,
         [protectedThis] {
             protectedThis->readyReadHandler();
         });
@@ -205,7 +208,7 @@ bool Connection::open()
     m_connectionQueue->dispatch([protectedThis] {
         protectedThis->readyReadHandler();
     });
-    }
+    
 
     return true;
 }
@@ -236,11 +239,11 @@ bool Connection::sendOutgoingMessage(std::unique_ptr<MessageEncoder> encoder)
     memcpy(messageBuffer+sizeof(MessageInfo),encoder->buffer(),encoder->bufferSize());
     memcpy(messageBuffer+sizeof(MessageInfo)+encoder->bufferSize(),attachments.data(),attachments.size()*sizeof(Attachment));
 
-    while (cosend(m_remoteCoport,messageBuffer.messageSize) == -1) {
+    while (cosend(m_remoteCoport.port,messageBuffer.messageSize) == -1) {
         if (errno == EINTR)
             continue;
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            pollcoport_T pollcp = make_pollcoport(m_remoteCoport,COPOLL_OUT);
+            pollcoport_T pollcp = make_pollcoport(m_remoteCoport.port,COPOLL_OUT);
             copoll(&pollfd, 1, -1);
             continue;
         }
@@ -261,11 +264,13 @@ Connection::CoportConnectionPair Connection::createPlatformConnection(unsigned o
 
     unsigned randomID = randomNumber() * std::numeric_limits<unsigned>::max();
     coport_name=String::format("com.apple.WebKit.%x", randomID).charactersWithNullTermination();
-    coopen(coport_name,COCARRIER,&coport_conn.client.localCoport);
+    coopen(coport_name.data(),COCARRIER,&coport_conn.client.localCoport);
+    strncpy(coport_conn.client_name,coport_name.data(),COPORT_NAME_LEN);
 
     randomID = randomNumber() * std::numeric_limits<unsigned>::max();
     coport_name=String::format("com.apple.WebKit.%x", randomID).charactersWithNullTermination();
-    coopen(coport_name,COCARRIER,&coport_conn.server.localCoport);
+    coopen(coport_name.data(),COCARRIER,&coport_conn.server.localCoport);
+    strncpy(coport_conn.server_name,coport_name.data(),COPORT_NAME_LEN);
     
     coport_conn.client.remoteCoport=coport_clearperm(coport_conn.client.localCoport,COPORT_PERM_RECV);
     coport_conn.server.remoteCoport=coport_clearperm(coport_conn.server.localCoport,COPORT_PERM_RECV);

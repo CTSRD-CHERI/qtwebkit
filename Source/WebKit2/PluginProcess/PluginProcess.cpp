@@ -157,7 +157,13 @@ void PluginProcess::createWebProcessConnection()
     IPC::Attachment clientSocket(socketPair.client);
     parentProcessConnection()->send(Messages::PluginProcessProxy::DidCreateWebProcessConnection(clientSocket, m_supportsAsynchronousPluginInitialization), 0);
 #elif USE(PROCESS_COLOCATION_IPC)
-    //TODO-PBB: IMPLEMENT
+    IPC::Connection::CoportConnectionPair connPair = IPC::Connection::createPlatformConnection();
+
+    RefPtr<WebProcessConnection> connection = WebProcessConnection::create(connPair.server);
+    m_webProcessConnections.append(connection.release());
+
+    IPC::Attachment clientSocket(connPair.client);
+    parentProcessConnection()->send(Messages::PluginProcessProxy::DidCreateWebProcessConnection(clientSocket, m_supportsAsynchronousPluginInitialization), 0);
 #elif OS(DARWIN)
     // Create the listening port.
     mach_port_t listeningPort;
