@@ -301,8 +301,7 @@ IncludeFile.processIncludeOptions()
 asmFile = ARGV.shift
 offsetsFile = ARGV.shift
 outputFlnm = ARGV.shift
-$cheriCapSize = ARGV.shift.to_i * 8
-
+$cheriCapSize = ARGV.shift.to_i
 
 $options = {}
 OptionParser.new do |opts|
