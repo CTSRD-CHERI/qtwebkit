@@ -990,6 +990,10 @@ else ()
     set(LLIntOutput LLIntAssembly.h)
 endif ()
 
+if (NOT "${CHERI_CAPABILITY_SIZE}" STREQUAL "128")
+    message(FATAL_ERROR "Only 128-bit CHERI capabilities are supported")
+endif()
+
 add_custom_command(
     OUTPUT ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/${LLIntOutput}
     MAIN_DEPENDENCY ${JAVASCRIPTCORE_DIR}/offlineasm/asm.rb

@@ -480,12 +480,12 @@ end
 
 def cloopEmitCompareAndBranch(operands, type, comparator)
     if (type == :int or type == :uint) and ($cheriCapSize == 128 or $cheriCapSize == 256)
-        if operands[0].is_a? RegisterID
+        if operands[0].is_a? RegisterID and (type == :uint)
             op0 = "__builtin_cheri_address_get(#{operands[0].clValue(:int8Ptr)})"
         else
             op0 = "#{operands[0].clValue(type)}"
         end
-        if operands[1].is_a? RegisterID
+        if operands[1].is_a? RegisterID and (type == :uint)
             op1 = "__builtin_cheri_address_get(#{operands[1].clValue(:int8Ptr)})"
         else
             op1 = "#{operands[1].clValue(type)}"
