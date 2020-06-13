@@ -49,7 +49,8 @@
 #endif
 
 #if USE(PROCESS_COLOCATION_IPC)
-#include <comesg/coport.h>
+#include <coport.h>
+#include <string.h>
 #endif
 
 #if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL)
@@ -131,38 +132,41 @@ public:
     /* UNIMPLEMENTED-COMESG do stuff */
     struct Identifier {
         Identifier()
-            : coport_name(NULL)
-            , coport(NULL)
+            : coport(NULL)
         {
         }
 
-        Identifier(StringReference coport_name)
-            : coport_name(coport_name)
-            , coport(NULL)
+        Identifier(StringReference name)
+            : coport(nullptr)
         {
+            strncpy(coport_name,name.data(),COPORT_NAME_LEN);
+
         }
 
-        Identifier(Coport_t port)
+        Identifier(coport_t port)
             : coport(port)
-            , coport_name(NULL)
         {
         }
 
         Identifier(named_coport_t nport)
             : coport(nport.port)
-            , coport_name(nport.name)
         {
+            strncpy(coport_name,nport.name,COPORT_NAME_LEN);
         }
 
         coport_t coport;
         char coport_name[COPORT_NAME_LEN];
     };
 
+    struct CoportConnectionPair {
+        coport_t localCoport;
+        coport_t remoteCoport;
+    };
     struct CoportPair {
         coport_t localCoport;
         coport_t remoteCoport;
     };
-    struct CoportConnectionPair {
+    struct NamedCoportConnectionPair {
         CoportPair client;
         CoportPair server;
         char client_name[COPORT_NAME_LEN];
@@ -209,7 +213,7 @@ public:
 
 #if (PLATFORM(MAC) || (PLATFORM(QT) && USE(MACH_PORTS))) && __MAC_OS_X_VERSION_MIN_REQUIRED <= 101000
     void setShouldCloseConnectionOnMachExceptions();
-#elif PLATFORM(QT) && USE(UNIX_DOMAIN_SOCKETS)
+#elif PLATFORM(QT) && ( USE(UNIX_DOMAIN_SOCKETS) || USE(PROCESS_COLOCATION_IPC) )
     void setShouldCloseConnectionOnProcessTermination(WebKit::PlatformProcessIdentifier);
 #endif
 

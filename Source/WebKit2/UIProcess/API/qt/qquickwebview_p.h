@@ -24,10 +24,13 @@
 
 #include "qquickurlschemedelegate_p.h"
 #include "qwebkitglobal.h"
-#include <QtQml/qqmllist.h>
-#include <QtQuick/qquickitem.h>
 #include <private/qquickflickable_p.h>
 
+#ifndef QML_DECLARE_TYPE(TYPE)
+#define QML_DECLARE_TYPE(TYPE) \
+    Q_DECLARE_METATYPE(TYPE *)
+#endif
+    
 QT_BEGIN_NAMESPACE
 class QQmlComponent;
 class QQmlWebChannel;

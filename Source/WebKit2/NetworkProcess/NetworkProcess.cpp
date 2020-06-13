@@ -242,11 +242,11 @@ void NetworkProcess::createNetworkConnectionToWebProcess()
 #elif USE(PROCESS_COLOCATION_IPC)
     IPC::Connection::SocketPair connPair = IPC::Connection::createPlatformConnection();
 
-    RefPtr<NetworkConnectionToWebProcess> connection = NetworkConnectionToWebProcess::create(connPair.server);
+    RefPtr<NetworkConnectionToWebProcess> connection = NetworkConnectionToWebProcess::create(connPair.localCoport);
     m_webProcessConnections.append(connection.release());
 
-    IPC::Attachment clientSocket(connPair.client);
-    parentProcessConnection()->send(Messages::NetworkProcessProxy::DidCreateNetworkConnectionToWebProcess(clientSocket), 0);
+    IPC::Attachment clientCoport(connPair.remoteCoport);
+    parentProcessConnection()->send(Messages::NetworkProcessProxy::DidCreateNetworkConnectionToWebProcess(clientCoport), 0);
 #elif OS(WINDOWS)
     IPC::Connection::Identifier serverIdentifier, clientIdentifier;
     if (!IPC::Connection::createServerAndClientIdentifiers(serverIdentifier, clientIdentifier)) {

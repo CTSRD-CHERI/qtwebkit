@@ -30,7 +30,7 @@
 #include <mach/mach_init.h>
 #include <mach/mach_traps.h>
 #elif USE(PROCESS_COLOCATION_IPC)
-#include <comesg/coport.h>
+#include <coport.h>
 #endif
 
 namespace IPC {
@@ -89,7 +89,7 @@ public:
     //ComesgPortType
     //CoMappedMemoryType
     void * __capability cap() const { return m_cap; }
-    void * __capability releaseCapability() { void * __capability temp = m_cap; m_cap = -1; return temp; }
+    void * __capability releaseCapability() { void * __capability temp = m_cap; m_cap = nullptr; return temp; }
 #elif OS(DARWIN)
     void release();
 

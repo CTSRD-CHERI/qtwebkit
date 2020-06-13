@@ -31,8 +31,8 @@
 
 #include "DataReference.h"
 #include "SharedMemory.h"
-#include "coport.h"
-#include "comsg.h"
+#include <coport.h>
+#include <comsg.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <errno.h>
@@ -95,6 +95,10 @@ void Connection::platformInitialize(Identifier identifier)
             strncpy(m_localCoport.name,identifier.coportName,COPORT_NAME_LEN);
         memset(m_remoteCoport,0,sizeof(named_port_t));
     }
+    if (m_remoteCoport.port == NULL && m_remoteCoport.name[0] != '\0')
+        coopen(m_remoteCoport.name,COCARRIER,&m_remoteCoport.port);
+    if (m_localCoport.port == NULL && m_localCoport.name[0] != '\0')
+        coopen(m_localCoport.name,COCARRIER,&m_localCoport.port);
 
 #if PLATFORM(QT)
     m_coportNotifier=0;
@@ -155,7 +159,7 @@ bool Connection::processMessage(void * __capability msg)
 void Connection::readyReadHandler()
 {
 #if PLATFORM(QT)
-    SocketNotifierResourceGuard socketNotifierEnabler(m_socketNotifier);
+    CoportNotifierResourceGuard coportNotifierEnabler(m_coportNotifier);
 #endif
     void * __capability msg = NULL;
     while (true) {
@@ -258,24 +262,24 @@ Connection::CoportConnectionPair Connection::createPlatformConnection(unsigned o
 {
     //Webkit's notion
     UNUSED_PARAM(options);
-    CoportConnectionPair coport_conn;
+    CoportPair coport_pair;
     coport_t port;
     Vector<UChar> coport_name;
 
     unsigned randomID = randomNumber() * std::numeric_limits<unsigned>::max();
     coport_name=String::format("com.apple.WebKit.%x", randomID).charactersWithNullTermination();
-    coopen(coport_name.data(),COCARRIER,&coport_conn.client.localCoport);
-    strncpy(coport_conn.client_name,coport_name.data(),COPORT_NAME_LEN);
-
+    coopen(coport_name.data(),COCARRIER,&coport_pair.localCoport);
+    //strncpy(coport_conn.client_name,coport_name.data(),COPORT_NAME_LEN);
+    /*
     randomID = randomNumber() * std::numeric_limits<unsigned>::max();
     coport_name=String::format("com.apple.WebKit.%x", randomID).charactersWithNullTermination();
     coopen(coport_name.data(),COCARRIER,&coport_conn.server.localCoport);
     strncpy(coport_conn.server_name,coport_name.data(),COPORT_NAME_LEN);
-    
-    coport_conn.client.remoteCoport=coport_clearperm(coport_conn.client.localCoport,COPORT_PERM_RECV);
-    coport_conn.server.remoteCoport=coport_clearperm(coport_conn.server.localCoport,COPORT_PERM_RECV);
-    //coport_pair.client.port=coport_clearperm(port,COPORT_PERM_SEND);
-    //coport_pair.server.port=coport_clearperm(port,COPORT_PERM_RECV);
+        */
+    coport_conn.client.remoteCoport=coport_conn.client.localCoport;
+    coport_conn.server.remoteCoport=coport_conn.server.localCoport;
+    //coport_pair.localCoport.port=coport_clearperm(port,COPORT_PERM_SEND);
+    //coport_pair.remoteCoport=coport_clearperm(port,COPORT_PERM_RECV);
     return coport_pair;
 }
     

@@ -17,6 +17,7 @@ list(APPEND JavaScriptCore_SYSTEM_INCLUDE_DIRECTORIES
 list(APPEND JavaScriptCore_LIBRARIES
     ${Qt5Core_LIBRARIES}
     Threads::Threads
+    comsg
 )
 
 if (QT_STATIC_BUILD)

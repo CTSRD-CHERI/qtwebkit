@@ -239,6 +239,12 @@ elseif (WIN32)
 
         Platform/win/SharedMemoryWin.cpp
     )
+elseif (USE_PROCESS_COLOCATION_IPC)
+    list(APPEND WebKit2_SOURCES
+        Platform/IPC/cheri/AttachmentCheri.cpp
+        Platform/IPC/cheri/ConnectionCheri.cpp
+        Platform/cheri/SharedMemoryCheri.cpp
+    )
 else ()
     list(APPEND WebKit2_SOURCES
         Platform/IPC/unix/AttachmentUnix.cpp
@@ -261,14 +267,11 @@ endif ()
 list(APPEND WebKit2_SYSTEM_INCLUDE_DIRECTORIES
     ${GLIB_INCLUDE_DIRS}
     ${GSTREAMER_INCLUDE_DIRS}
-    ${Qt5Quick_INCLUDE_DIRS}
-    ${Qt5Quick_PRIVATE_INCLUDE_DIRS}
     ${SQLITE_INCLUDE_DIR}
 )
 
 list(APPEND WebKit2_LIBRARIES
     ${Qt5Positioning_LIBRARIES}
-    ${Qt5Quick_LIBRARIES}
     ${Qt5WebChannel_LIBRARIES}
     ${X11_X11_LIB}
 )

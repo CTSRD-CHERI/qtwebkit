@@ -31,6 +31,7 @@
 #include <memory>
 #include <wtf/Assertions.h>
 #include <wtf/CheckedArithmetic.h>
+#include <sys/cdefs.h>
 
 // This was used to declare and define a static local variable (static T;) so that
 //  it was leaked so that its destructors were not called at exit.

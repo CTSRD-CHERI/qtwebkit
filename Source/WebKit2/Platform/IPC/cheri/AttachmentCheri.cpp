@@ -27,7 +27,7 @@
 
 //#include "config.h"
 #include "Attachment.h"
-#include <cheri/coport.h>
+#include <coport.h>
 
 namespace IPC {
 

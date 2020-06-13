@@ -13,6 +13,8 @@ list(APPEND WTF_SYSTEM_INCLUDE_DIRECTORIES
 list(APPEND WTF_LIBRARIES
     ${Qt5Core_LIBRARIES}
     Threads::Threads
+    comsg
+    execinfo
 )
 
 if (SHARED_CORE)

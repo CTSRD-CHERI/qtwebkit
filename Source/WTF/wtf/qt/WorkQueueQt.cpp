@@ -80,6 +80,7 @@ public:
     std::function<void()> m_function;
 };
 
+#if USE(UNIX_DOMAIN_SOCKETS)
 QSocketNotifier* WorkQueue::registerSocketEventHandler(int socketDescriptor, QSocketNotifier::Type type, std::function<void()> function)
 {
     ASSERT(m_workThread);
@@ -93,6 +94,9 @@ QSocketNotifier* WorkQueue::registerSocketEventHandler(int socketDescriptor, QSo
     return notifier;
 }
 
+#endif 
+
+#if USE(PROCESS_COLOCATION_IPC)
 QCoportNotifier* WorkQueue::registerCoportEventHandler(coport_t port, QCoportNotifier::Type type, std::function<void()> function)
 {
     ASSERT(m_workThread);
@@ -106,6 +110,7 @@ QCoportNotifier* WorkQueue::registerCoportEventHandler(coport_t port, QCoportNot
     return notifier;
 }
 
+#endif
 void WorkQueue::platformInitialize(const char*, Type, QOS)
 {
     m_workThread = new QThread();

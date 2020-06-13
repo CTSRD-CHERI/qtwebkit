@@ -23,7 +23,11 @@
 
 #include "qwebkitglobal.h"
 #include <QObject>
-#include <QtQuick/qquickitem.h>
+
+#ifndef QML_DECLARE_TYPE(TYPE)
+#define QML_DECLARE_TYPE(TYPE) \
+    Q_DECLARE_METATYPE(TYPE *)
+#endif
 
 QT_BEGIN_NAMESPACE
 class QUrl;

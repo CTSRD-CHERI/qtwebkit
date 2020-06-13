@@ -159,11 +159,11 @@ void PluginProcess::createWebProcessConnection()
 #elif USE(PROCESS_COLOCATION_IPC)
     IPC::Connection::CoportConnectionPair connPair = IPC::Connection::createPlatformConnection();
 
-    RefPtr<WebProcessConnection> connection = WebProcessConnection::create(connPair.server);
+    RefPtr<WebProcessConnection> connection = WebProcessConnection::create(connPair.localCoport);
     m_webProcessConnections.append(connection.release());
 
-    IPC::Attachment clientSocket(connPair.client);
-    parentProcessConnection()->send(Messages::PluginProcessProxy::DidCreateWebProcessConnection(clientSocket, m_supportsAsynchronousPluginInitialization), 0);
+    IPC::Attachment clientSocket(connPair.remoteCoport);
+    parentProcessConnection()->send(Messages::PluginProcessProxy::DidCreateWebProcessConnection(clientCoport, m_supportsAsynchronousPluginInitialization), 0);
 #elif OS(DARWIN)
     // Create the listening port.
     mach_port_t listeningPort;

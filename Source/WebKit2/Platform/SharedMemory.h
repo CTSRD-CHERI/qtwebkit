@@ -69,11 +69,9 @@ public:
         void encode(IPC::ArgumentEncoder&) const;
         static bool decode(IPC::ArgumentDecoder&, Handle&);
 
-#if USE(UNIX_DOMAIN_SOCKETS)
+#if USE(UNIX_DOMAIN_SOCKETS) || USE(PROCESS_COLOCATION_IPC)
         IPC::Attachment releaseAttachment() const;
         void adoptAttachment(IPC::Attachment&&);
-#elif USE(PROCESS_COLOCATION_IPC)
-        size_t size() { return cheri_getlen(m_cap); }
 #endif
     private:
         friend class SharedMemory;

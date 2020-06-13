@@ -48,6 +48,7 @@
 #include <QSocketNotifier>
 #elif PLATFORM(QT) && USE(PROCESS_COLOCATION_IPC)
 #include <QCoportNotifier>
+#include <coport.h>
 #elif OS(WINDOWS)
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>
@@ -89,12 +90,14 @@ public:
 #elif PLATFORM(EFL)
     void registerSocketEventHandler(int, std::function<void ()>);
     void unregisterSocketEventHandler(int);
-#elif PLATFORM(QT) && USE(UNIX_DOMAIN_SOCKETS)
+#elif PLATFORM(QT)
+    void dispatchOnTermination(QProcess*, std::function<void()>);
+#if USE(UNIX_DOMAIN_SOCKETS)
     QSocketNotifier* registerSocketEventHandler(int, QSocketNotifier::Type, std::function<void()>);
-    void dispatchOnTermination(QProcess*, std::function<void()>);
-#elif PLATFORM(QT) && USE(PROCESS_COLOCATION_IPC)
-    QCoportNotifier* registerCoportEventHandler(int, QCoportNotifier::Type, std::function<void()>);
-    void dispatchOnTermination(QProcess*, std::function<void()>);
+#endif
+#if USE(PROCESS_COLOCATION_IPC)
+    QCoportNotifier* registerCoportEventHandler(coport_t port, QCoportNotifier::Type, std::function<void()>);
+#endif
 #elif PLATFORM(QT) && OS(WINDOWS)
     void registerHandle(HANDLE, const std::function<void()>&);
     void unregisterAndCloseHandle(HANDLE);

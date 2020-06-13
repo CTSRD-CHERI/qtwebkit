@@ -185,7 +185,8 @@ void ArgumentEncoder::encode(double n)
     copyValueToBuffer(n, buffer);
 }
 
-void ArgumentEncoder::encode(void * __capability n)
+void ArgumentEncoder::encode(void * n)
+{
     uint8_t* buffer = grow(sizeof(n), sizeof(n));
     copyValueToBuffer(n, buffer);
 }

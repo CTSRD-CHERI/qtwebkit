@@ -46,14 +46,6 @@ Attachment::Attachment(mach_port_name_t port, mach_msg_type_name_t disposition)
     , m_disposition(disposition)
 {
 }
-#elif USE(PROCESS_COLOCATION_IPC)
-/* UNIMPLEMENTED-COMESG do stuff */
-Attachment::Attachment(coport_t coport)
-    : m_type(CoportType)
-    , m_coport(coport)
-{
-}
-
 void Attachment::release()
 {
     m_type = Uninitialized;
