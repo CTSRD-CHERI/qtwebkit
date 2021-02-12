@@ -31,14 +31,14 @@
 #include <wtf/InlineASM.h>
 
 #ifdef __CHERI_PURE_CAPABILITY__
-#if __UINTCAP_WIDTH__ == 128
+#if __SIZEOF_UINTCAP__  == 16
 #define OFFLINE_ASM_CHERI_128_PURECAP 1
 #define OFFLINE_ASM_CHERI_256_PURECAP 0
-#elif __UINTCAP_WIDTH__ == 256
+#elif __SIZEOF_UINTCAP__  == 32
 #define OFFLINE_ASM_CHERI_128_PURECAP 0
 #define OFFLINE_ASM_CHERI_256_PURECAP 1
 #else
-#error __UINTCAP_WIDTH__ is undefined or an unsupported value
+#error __SIZEOF_UINTCAP__ is undefined or an unsupported value
 #endif
 #else
 #define OFFLINE_ASM_CHERI_128_PURECAP 0
