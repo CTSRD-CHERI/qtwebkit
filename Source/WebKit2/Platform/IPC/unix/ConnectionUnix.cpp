@@ -139,7 +139,7 @@ void Connection::platformInitialize(Identifier identifier)
     m_fileDescriptors.reserveInitialCapacity(attachmentMaxAmount);
 
 #if PLATFORM(QT)
-    m_socketNotifier = 0;
+    m_socketNotifier = nullptr;
 #endif
 }
 
@@ -175,7 +175,8 @@ public:
     SocketNotifierResourceGuard(QSocketNotifier* socketNotifier)
         : m_socketNotifier(socketNotifier)
     {
-        m_socketNotifier.data()->setEnabled(false);
+		if (m_socketNotifier)
+			m_socketNotifier.data()->setEnabled(false);
     }
 
     ~SocketNotifierResourceGuard()
