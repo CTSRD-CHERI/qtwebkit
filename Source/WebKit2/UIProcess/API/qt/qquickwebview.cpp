@@ -405,7 +405,11 @@ void QQuickWebViewPrivate::initialize(WKPageConfigurationRef configurationRef)
     preferences.setCompositingRepaintCountersVisible(showDebugVisuals);
     preferences.setFrameFlatteningEnabled(true);
     preferences.setMediaSourceEnabled(false);
+#if ENABLE(WEBGL)
     preferences.setWebGLEnabled(true);
+#else
+    preferences.setWebGLEnabled(false);
+#endif
     preferences.setForceCompositingMode(true);
     preferences.setAllowFileAccessFromFileURLs(true);
 
