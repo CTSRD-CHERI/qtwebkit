@@ -6276,7 +6276,10 @@ void WebPageProxy::setURLSchemeHandlerForScheme(Ref<WebURLSchemeHandler>&& handl
 //    ASSERT(!URLParser::isSpecialScheme(canonicalizedScheme.value()));
 
     auto schemeResult = m_urlSchemeHandlersByScheme.add(canonicalizedScheme.value(), handler.ptr());
+#if !PLATFORM(QT)
+    /* This can be incorrect on Qt because this is called when WebProcess is restarted. */
     ASSERT_UNUSED(schemeResult, schemeResult.isNewEntry);
+#endif
 
     auto identifier = handler->identifier();
     auto identifierResult = m_urlSchemeHandlersByIdentifier.add(identifier, WTFMove(handler));

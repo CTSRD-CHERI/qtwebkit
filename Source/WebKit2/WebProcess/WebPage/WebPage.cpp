@@ -5341,10 +5341,15 @@ WebURLSchemeHandlerProxy* WebPage::urlSchemeHandlerForScheme(const String& schem
 void WebPage::registerURLSchemeHandler(uint64_t handlerIdentifier, const String& scheme)
 {
     auto schemeResult = m_schemeToURLSchemeHandlerProxyMap.add(scheme, std::make_unique<WebURLSchemeHandlerProxy>(*this, handlerIdentifier));
+#if !PLATFORM(QT)
+    /* Qt resets the scheme handler for .qml files when the WebProcess is relaunched. The entry is not new then. */
     ASSERT(schemeResult.isNewEntry);
+#endif
 
     auto identifierResult = m_identifierToURLSchemeHandlerProxyMap.add(handlerIdentifier, schemeResult.iterator->value.get());
+#if !PLATFORM(QT)
     ASSERT_UNUSED(identifierResult, identifierResult.isNewEntry);
+#endif
 }
 
 void WebPage::urlSchemeHandlerTaskDidReceiveResponse(uint64_t handlerIdentifier, uint64_t taskIdentifier, const ResourceResponse& response)
