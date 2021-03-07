@@ -30,6 +30,8 @@
 #if USE(TEXTURE_MAPPER)
 #include "BitmapTextureGL.h"
 #include "TextureMapperGL.h"
+#include "BitmapTexture.h" //The non-GL versions do not include these for some reason
+#include "TextureMapper.h"
 #endif
 
 using namespace WebCore;

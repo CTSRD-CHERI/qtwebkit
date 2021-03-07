@@ -20,12 +20,14 @@
 
 #include "config.h"
 
+
 #if USE(COORDINATED_GRAPHICS)
 #include "CoordinatedGraphicsScene.h"
 
 #include "CoordinatedBackingStore.h"
 #include <WebCore/TextureMapper.h>
 #include <WebCore/TextureMapperBackingStore.h>
+#include <WebCore/TextureMapperImageBuffer.h>
 #include <WebCore/TextureMapperGL.h>
 #include <WebCore/TextureMapperLayer.h>
 #include <wtf/Atomics.h>
@@ -59,6 +61,7 @@ static bool layerShouldHaveBackingStore(TextureMapperLayer* layer)
 CoordinatedGraphicsScene::CoordinatedGraphicsScene(CoordinatedGraphicsSceneClient* client)
     : m_client(client)
     , m_isActive(false)
+	, m_context(nullptr)
     , m_rootLayerID(InvalidCoordinatedLayerID)
     , m_viewBackgroundColor(Color::white)
     , m_clientRunLoop(RunLoop::current())
@@ -69,11 +72,39 @@ CoordinatedGraphicsScene::~CoordinatedGraphicsScene()
 {
 }
 
+void CoordinatedGraphicsScene::setGraphicsContext(PlatformGraphicsContext* platformContext)
+{
+    if (!m_textureMapper) {
+#ifndef __CHERI_PURE_CAPABILITY__        
+        m_textureMapper = TextureMapper::create(TextureMapper::OpenGLMode);
+#else
+        m_textureMapper = TextureMapper::create(TextureMapper::SoftwareMode);
+#endif
+    }
+	/*
+		CHERI-PBB: For QtQuick's SceneGraph, the QPainter is allocated on the stack (QSGSoftwareRenderer::render).
+		To make this work without OpenGL, we need to set the graphics context so that the paint calls below work.
+		Presumably the OpenGL texture mapper tracks/gets the context itself internally, but the image buffer does
+		not. This function was imp
+	*/
+	if (m_context) {
+		if (m_context->platformContext() != platformContext) 
+			delete m_context;
+	}
+	m_context = new GraphicsContext(platformContext);
+	m_textureMapper->setGraphicsContext(m_context);
+    
+}
+
 void CoordinatedGraphicsScene::paintToCurrentGLContext(const TransformationMatrix& matrix, float opacity, const FloatRect& clipRect, const Color& backgroundColor, bool drawsBackground, const FloatPoint& contentPosition, TextureMapper::PaintFlags PaintFlags)
 {
     if (!m_textureMapper) {
+#ifndef __CHERI_PURE_CAPABILITY__        
         m_textureMapper = TextureMapper::create(TextureMapper::OpenGLMode);
         static_cast<TextureMapperGL*>(m_textureMapper.get())->setEnableEdgeDistanceAntialiasing(true);
+#else
+        m_textureMapper = TextureMapper::create(TextureMapper::SoftwareMode);
+#endif
     }
 
     syncRemoteContent();
@@ -91,17 +122,32 @@ void CoordinatedGraphicsScene::paintToCurrentGLContext(const TransformationMatri
     currentRootLayer->setTextureMapper(m_textureMapper.get());
     currentRootLayer->applyAnimationsRecursively();
     m_textureMapper->beginPainting(PaintFlags);
+#if PLATFORM(QT) && defined(__CHERI_PURE_CAPABILITY__)
+	m_textureMapper->beginClip(matrix, clipRect);
+#else
     m_textureMapper->beginClip(TransformationMatrix(), clipRect);
+#endif
 
     if (drawsBackground) {
+#ifndef __CHERI_PURE_CAPABILITY__
         RGBA32 rgba = makeRGBA32FromFloats(backgroundColor.red(),
             backgroundColor.green(), backgroundColor.blue(),
             backgroundColor.alpha() * opacity);
         m_textureMapper->drawSolidColor(clipRect, TransformationMatrix(), Color(rgba));
+#else
+        m_textureMapper->drawSolidColor(clipRect, TransformationMatrix(), backgroundColor);
+#endif
     } else {
+    
+#ifndef __CHERI_PURE_CAPABILITY__
+        /* XXX-PBB: Not yet supported on CHERI RISCV. A solution will hopefully follow. */
         GraphicsContext3D* context = static_cast<TextureMapperGL*>(m_textureMapper.get())->graphicsContext3D();
         context->clearColor(m_viewBackgroundColor.red() / 255.0f, m_viewBackgroundColor.green() / 255.0f, m_viewBackgroundColor.blue() / 255.0f, m_viewBackgroundColor.alpha() / 255.0f);
         context->clear(GraphicsContext3D::COLOR_BUFFER_BIT);
+#else
+        GraphicsContext* context = m_textureMapper->graphicsContext();
+        context->setFillColor(m_viewBackgroundColor);
+#endif        
     }
 
     if (currentRootLayer->opacity() != opacity || currentRootLayer->transform() != matrix) {
@@ -683,6 +729,8 @@ void CoordinatedGraphicsScene::purgeGLResources()
     m_layers.clear();
     m_fixedLayers.clear();
     m_textureMapper = nullptr;
+	delete m_context;
+	m_context = nullptr;
     m_backingStores.clear();
     m_backingStoresWithPendingBuffers.clear();
 

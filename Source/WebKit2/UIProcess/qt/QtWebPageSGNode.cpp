@@ -55,7 +55,7 @@ public:
 
     void render(const RenderState* state) final
     {
-        renderInternal(state->projectionMatrix());
+        renderInternal(state->projectionMatrix(), state->painter(), state->clipRegion());
     }
 
 #else
@@ -67,12 +67,12 @@ public:
 
     void render(const RenderState& state) final
     {
-        renderInternal(state.projectionMatrix);
+        renderInternal(state.projectionMatrix, state.painter);
     }
 
 #endif // QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
 
-    void renderInternal(const QMatrix4x4* projection)
+    void renderInternal(const QMatrix4x4* projection, QPainter* painter, const QRegion *clipRegion)
     {
         TransformationMatrix renderMatrix;
         if (pageNode()->devicePixelRatio() != 1.0) {
@@ -86,8 +86,15 @@ public:
         // mirror the projection matrix to fit on the destination coordinate system.
         bool mirrored = projection && (*projection)(0, 0) * (*projection)(1, 1) - (*projection)(0, 1) * (*projection)(1, 0) > 0;
 
+		if (painter)
+			coordinatedGraphicsScene()->setGraphicsContext(painter);
+		QRectF cr = clipRect();
+		if (!cr.isValid())
+			cr = QRectF(clipRegion->boundingRect());
+		if (!cr.isValid())
+			cr = QRect(0, 0, painter->device()->width(), painter->device()->height());
         // FIXME: Support non-rectangular clippings.
-        coordinatedGraphicsScene()->paintToCurrentGLContext(renderMatrix, inheritedOpacity(), clipRect(),
+        coordinatedGraphicsScene()->paintToCurrentGLContext(renderMatrix, inheritedOpacity(), cr,
             pageNode()->page().pageExtendedBackgroundColor(), pageNode()->page().drawsBackground(), FloatPoint(),
             mirrored ? TextureMapper::PaintingMirrored : 0);
     }

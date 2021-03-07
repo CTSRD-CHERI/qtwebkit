@@ -70,6 +70,7 @@ class CoordinatedGraphicsScene : public ThreadSafeRefCounted<CoordinatedGraphics
 public:
     explicit CoordinatedGraphicsScene(CoordinatedGraphicsSceneClient*);
     virtual ~CoordinatedGraphicsScene();
+	void setGraphicsContext(PlatformGraphicsContext*);
     void paintToCurrentGLContext(const WebCore::TransformationMatrix&, float, const WebCore::FloatRect&, const WebCore::Color& backgroundColor, bool drawsBackground, const WebCore::FloatPoint&, WebCore::TextureMapper::PaintFlags = 0);
     void paintToGraphicsContext(PlatformGraphicsContext*, const WebCore::Color& backgroundColor, bool drawsBackground);
 #if PLATFORM(QT)
@@ -164,6 +165,7 @@ private:
     Lock m_renderQueueMutex;
 
     std::unique_ptr<WebCore::TextureMapper> m_textureMapper;
+	WebCore::GraphicsContext* m_context;
 
     typedef HashMap<WebCore::CoordinatedImageBackingID, RefPtr<CoordinatedBackingStore>> ImageBackingMap;
     ImageBackingMap m_imageBackings;
