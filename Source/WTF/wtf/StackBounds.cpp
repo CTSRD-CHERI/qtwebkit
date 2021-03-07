@@ -111,7 +111,7 @@ void StackBounds::initialize()
     (void)rc; // FIXME: Deal with error code somehow? Seems fatal.
     ASSERT(stackBase);
 #ifdef __CHERI_PURE_CAPABILITY__
-    ASSERT((vaddr_t)stackBase < (vaddr_t)__builtin_cheri_base_get(__builtin_cheri_stack_get()));
+    ASSERT((vaddr_t)stackBase <= (vaddr_t)__builtin_cheri_base_get(__builtin_cheri_stack_get()));
     RELEASE_ASSERT((vaddr_t)stackBase <= (vaddr_t)__builtin_cheri_base_get(__builtin_cheri_stack_get()));
 #endif
     pthread_attr_destroy(&sattr);
