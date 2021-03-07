@@ -300,6 +300,8 @@ static inline bool compare(const MagicNumbers& info, const char* data, size_t da
         data += pos;
         dataSize -= pos;
     }
+    if (dataSize == 0)
+        return false;
 
     bool result;
     if (info.mask)
