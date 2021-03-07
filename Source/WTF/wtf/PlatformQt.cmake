@@ -64,6 +64,12 @@ if (WIN32)
     )
 endif ()
 
+if (UNIX)
+    list(APPEND WTF_LIBRARIES
+        execinfo
+    )
+endif ()
+
 if (APPLE)
     list(APPEND WTF_SOURCES
         cocoa/WorkQueueCocoa.cpp
