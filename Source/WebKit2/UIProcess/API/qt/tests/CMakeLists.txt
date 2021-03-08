@@ -8,6 +8,7 @@ include_directories(SYSTEM
     ${Qt5Quick_INCLUDE_DIRS}
     ${Qt5Quick_PRIVATE_INCLUDE_DIRS}
     ${Qt5QuickTest_INCLUDE_DIRS}
+	${FORWARDING_HEADERS_DIR}
 )
 
 set(tst_qmltests_DEFINITIONS
@@ -27,6 +28,14 @@ set(tst_qmltests_WebView_DEFINITIONS
     ${tst_qmltests_DEFINITIONS}
 
     QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qmltests/WebView"
+)
+
+set(tst_qquickwebview_DEFINITIONS
+    IMPORT_DIR="${CMAKE_BINARY_DIR}/imports"
+    QWP_PATH="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+	TESTS_SOURCE_DIR=""
+	HAVE_QTQUICK=1
+    DISABLE_FLICKABLE_VIEWPORT=1
 )
 
 set(qmltests_QML_SOURCES
@@ -75,6 +84,12 @@ set(qmltests_SOURCES
     ${qmltests_QML_SOURCES}
 )
 
+set(qquickwebviewtests_SOURCES
+    util.cpp
+	
+    qquickwebview/tst_qquickwebview.cpp
+)
+
 qt5_add_resources(qmltests_SOURCES qmltests/resources.qrc)
 
 set(qmltests_LIBRARIES
@@ -89,6 +104,11 @@ if (SHARED_CORE)
         WebKit2
     )
 endif ()
+
+add_executable(tst_qquickwebview ${qquickwebviewtests_SOURCES})
+target_compile_definitions(tst_qquickwebview PRIVATE ${tst_qquickwebview_DEFINITIONS})
+target_link_libraries(tst_qquickwebview ${qmltests_LIBRARIES})
+set_target_properties(tst_qquickwebview PROPERTIES AUTOMOC ON)
 
 add_executable(tst_qmltests_WebView ${qmltests_SOURCES})
 target_compile_definitions(tst_qmltests_WebView PRIVATE ${tst_qmltests_WebView_DEFINITIONS})
