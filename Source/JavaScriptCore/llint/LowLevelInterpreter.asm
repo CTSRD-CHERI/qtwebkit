@@ -334,13 +334,7 @@ if BIG_ENDIAN
         const PayloadOffset = 4
     end
 else
-    if CHERI_128_PURECAP
-        const TagOffset = 12
-    elsif CHERI_256_PURECAP
-        const TagOffset = 28
-    else
-        const TagOffset = 4
-    end
+    const TagOffset = 4
     const PayloadOffset = 0
 end
 
@@ -411,17 +405,7 @@ end
 
 # This must match wtf/Vector.h
 const VectorBufferOffset = 0
-if JSVALUE64
-    if CHERI_128_PURECAP
-        const VectorSizeOffset = 20
-    elsif CHERI_256_PURECAP
-        const VectorSizeOffset = 36
-    else
-        const VectorSizeOffset = 12
-    end
-else
-    const VectorSizeOffset = 8
-end
+const VectorSizeOffset = PtrSize + 4
 
 # Some common utilities.
 macro crash()

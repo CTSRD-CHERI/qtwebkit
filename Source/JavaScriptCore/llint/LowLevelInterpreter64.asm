@@ -370,7 +370,8 @@ macro callCallSlowPath(slowPath, action)
     printi PC, "callCallSlowPath"
     storei PC, ArgumentCount + TagOffset[cfr]
     printi ArgumentCount + TagOffset[cfr]
-    printp ArgumentCount + TagOffset[cfr]
+    # CHERI-PBB: Not aligned properly for CHERI RISC-V
+    # printp ArgumentCount + TagOffset[cfr] 
     prepareStateForCCall()
     move cfr, a0
     move PC, a1

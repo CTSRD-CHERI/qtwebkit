@@ -114,11 +114,7 @@ void Data::performAssertions(VM& vm)
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.payload) == 4);
 #endif
 #else
-#ifdef __CHERI_PURE_CAPABILITY__
-    ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.tag) == (sizeof(__uintcap_t)-4));
-#else
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.tag) == 4);
-#endif
     ASSERT(OBJECT_OFFSETOF(EncodedValueDescriptor, asBits.payload) == 0);
 #endif
 #if USE(JSVALUE32_64)
