@@ -72,6 +72,11 @@ inline void ConservativeRoots::genericAddPointer(void* p, TinyBloomFilter filter
     // Check if this is a valid capability
     if (!__builtin_cheri_tag_get(p))
         return;
+
+    // Check this isn't a sentry
+    // TODO-PBB: don't use -2l, get the sentry otype some other way
+    if (__builtin_cheri_sealed_get(p) && __builtin_cheri_type_get(p) == (-2l))
+        return;
 #endif
     markHook.mark(p);
 
