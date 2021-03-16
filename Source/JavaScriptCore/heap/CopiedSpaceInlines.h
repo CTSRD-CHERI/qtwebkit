@@ -174,7 +174,7 @@ inline CopiedBlock* CopiedSpace::blockFor(void* ptr)
 #if __has_builtin(__builtin_align_down)
     return reinterpret_cast<CopiedBlock*>(__builtin_align_down(ptr, CopiedBlock::blockSize));
 #else
-    return reinterpret_cast<CopiedBlock*>(reinterpret_cast<size_t>(ptr) & s_blockMask);
+    return reinterpret_cast<CopiedBlock*>(reinterpret_cast<uintptr_t>(ptr) & s_blockMask);
 #endif
 }
 
